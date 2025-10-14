@@ -1,0 +1,62 @@
+/* General layout */
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Container spacing */
+.container {
+    max-width: 1000px;
+}
+
+/* Back button - bottom right */
+.back-btn-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+.back-btn-container .btn-danger {
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: bold;
+}
+
+/* Card styling */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Card header */
+.card-header {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Card body */
+.card-body p {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+}
+
+/* Form fields */
+.form-label {
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 8px;
+}
+
+/* Save button */
+.btn-success, .btn-primary {
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-weight: 500;
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
