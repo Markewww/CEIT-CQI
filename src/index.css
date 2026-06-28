@@ -1,0 +1,49 @@
+@import url("https://googleapis.com");
+@import "tailwindcss";
+
+@theme {
+  /* System Green Palette Overrides */
+  --color-primary: #1b4d3e;          /* Official Deep Cavite State Green */
+  --color-primary-hover: #143a2f;    /* Darker shade for buttons states */
+  --color-accent-gold: #f2af29;      /* Cavite State University Gold Accent */
+  
+  /* Background configurations */
+  --color-bg-main: #e0e0e0;
+  --color-bg-disabled: #c0c0c0;
+  --color-text-disabled: #9e9e9e;
+
+  /* Font Families mapping to Tailwind classes (font-sans and font-montserrat) */
+  --font-sans: "DM Sans", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+}
+
+/* Smooth Opacity/Fade Transition Utility */
+.fade-transition {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 4. Smooth Panel Width Expanding Transitions */
+.panel-transition {
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Initial Login Panel state */
+.panel-half-right {
+  width: 50%;
+  transform: translateX(0);
+}
+
+/* Expansion state covering the full viewport */
+.panel-full-cover {
+  width: 100% !important;
+  transform: translateX(0);
+}
+
+/* 5. Document Base Settings */
+body {
+  margin: 0;
+  font-family: var(--font-sans); /* DM Sans handles the main interface baseline automatically */
+  background-color: var(--color-bg-main);
+  -webkit-font-smoothing: antialiased;
+}
