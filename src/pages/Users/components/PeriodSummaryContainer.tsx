@@ -26,7 +26,7 @@ const PeriodSummaryContainer: React.FC<PeriodSummaryContainerProps> = ({ schedul
                         onClick={() => setSummaryTab(sub.id as any)}
                         className={`text-[10px] font-bold font-montserrat uppercase px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                             summaryTab === sub.id
-                                ? "bg-slate-800 border-slate-800 text-white shadow-sm font-extrabold"
+                                ? "bg-primary border-primary text-white shadow-sm font-extrabold"
                                 : "bg-white border-slate-200 text-slate-500 hover:text-slate-800"
                         }`}
                     >

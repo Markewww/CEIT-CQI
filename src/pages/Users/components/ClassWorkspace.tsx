@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import TestAnalysisGrid from "./TestAnalysisGrid";
 import IloAttainmentReport from "./IloAttainmentReport"; 
 import PeriodSummaryContainer from "./PeriodSummaryContainer";
+import OverallSummaryCanvas from "./OverallSummaryCanvas";
 
 interface ClassInfo {
     schedule_id: string;
@@ -387,15 +388,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
 
                 {/* MODE C: OVERALL SUMMARY INTERFACE DASHBOARD SHEET */}
                 {activeMainTab === "summary" && (
-                    <div className="bg-white p-8 rounded-2xl border border-slate-200/60 shadow-sm text-center flex flex-col items-center justify-center min-h-75 border-dashed animate-fade-in">
-                        <div className="text-2xl mb-2">🏁</div>
-                        <h4 className="text-xs font-bold text-slate-700 font-montserrat uppercase tracking-wider">
-                            Continuous Quality Outcome Report Sheet
-                        </h4>
-                        <p className="text-xs text-slate-400 max-w-sm mt-1 leading-relaxed">
-                            Aggregates multi-period midterm and final assessment scores dynamically to chart institutional accreditation compliance summaries.
-                        </p>
-                    </div>
+                   <OverallSummaryCanvas scheduleId={scheduleId} />
                 )}
 
             </div>
