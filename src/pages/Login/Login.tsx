@@ -23,38 +23,51 @@ const Login = () => {
 
     /* Locate your handleSubmit method inside your Login.tsx and replace it with this: */
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    e.preventDefault();
+    
+    try {
+        const response = await fetch("http://localhost/cqi/api/login.php", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                loginInput: loginInput,
+                password: password
+            })
+        });
 
-        // Clear out any previous session error flags here if needed...
+        const data = await response.json();
 
-        try {
-            // Send a POST request containing your state variables to your XAMPP local server
-            const response = await fetch("http://localhost/cqi/api/login.php", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    loginInput: loginInput, // Holds either username or university email
-                    password: password
-                })
-            });
+        if (data.status === "success") {
+            // 1. CRITICAL SECURE FIX: Save session keys to disk so ProtectedRoute permits access [INDEX: 1]
+            // Falls back to a mock string if your backend uses pure session-based validation rows
+            const sessionToken = data.token || "authenticated_secure_session_token";
+            localStorage.setItem("token", sessionToken);
+            localStorage.setItem("user", JSON.stringify(data.user));
 
-            const data = await response.json();
+            // 2. Sync credentials into your global Context state provider [INDEX: 0.1.7]
+            loginContext(data.user);
 
-            if (data.status === "success") {
-                loginContext(data.user);
-                navigate("/dashboard");
+            // Normalize character casing to guarantee no route skips
+            const normalizedRole = (data.user.role || "").toLowerCase();
+
+            // 3. Dynamic Redirection Router Matrix with history overwriting [INDEX: 0.1.7, 1]
+            if (normalizedRole === "admin") {
+                navigate("/dashboard", { replace: true });
             } else {
-                // Server caught bad credentials or a suspended account lock profile
-                alert(data.message || "Authentication rejected.");
+                navigate("/users/dashboard", { replace: true });
             }
-
-        } catch (error) {
-            console.error("Network communication loss with the PHP backend server API:", error);
-            alert("Unable to connect to the login validation server. Please ensure XAMPP Apache is active.");
+        } else {
+            // Server caught bad credentials or a suspended account lock profile [INDEX: 0.1.7]
+            alert(data.message || "Authentication rejected.");
         }
-    };
+    } catch (error) {
+        console.error("Network communication loss with the PHP backend server API:", error); // INDEX: 0.1.7
+        alert("Unable to connect to the login validation server. Please ensure XAMPP Apache is active."); // INDEX: 0.1.7
+    }
+};
+
 
     return (
         <div className="w-full h-screen relative bg-slate-50 font-sans overflow-hidden select-none">

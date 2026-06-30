@@ -7,8 +7,12 @@ const Header = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
         logoutContext();
-        navigate("/");
+        navigate("/", { replace: true });
     };
 
     return (
