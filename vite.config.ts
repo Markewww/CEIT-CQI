@@ -18,4 +18,13 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-})
+  server: {
+    proxy: {
+      '/cqi/api': {
+        target: 'http://localhost',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
+});

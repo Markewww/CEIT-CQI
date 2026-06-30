@@ -15,12 +15,13 @@
     "axios": "^1.18.0",
     "framer-motion": "^12.40.0",
     "html5-qrcode": "^2.3.8",
-    "lucide-react": "^1.21.0",
+    "lucide-react": "^1.22.0",
     "react": "^19.2.7",
     "react-anchor-link-smooth-scroll": "^1.0.12",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.79.0",
-    "react-router-dom": "^7.18.0"
+    "react-router-dom": "^7.18.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
