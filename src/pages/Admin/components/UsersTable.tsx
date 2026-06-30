@@ -14,9 +14,12 @@ interface SystemUser {
     email: string;
     contact_number: string;
     department_id: number;
+    program_id: number | null;
     role: 'Admin' | 'Faculty' | 'Chairperson' | 'Department Head' | 'Dean';
     status: 'Pending' | 'Approved' | 'Rejected';
     is_active: number;
+    department_code: string;
+    program_code: string | null;
 }
 
 interface UsersTableProps {
@@ -217,7 +220,23 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
                                             {account.full_name}
                                         </h4>
                                         <p className="text-xs text-slate-400 font-medium">
-                                            {account.email} <span className="text-slate-300">|</span> ID: {account.employee_id}
+                                            <span>{account.email}</span>
+                                            <span className="text-slate-300">|</span>
+                                            <span>{account.employee_id}</span>
+                                            <span className="text-slate-300">|</span>
+                                            {/* DEPT CODE DISPLAY */}
+                                            <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-bold font-montserrat">
+                                                {account.department_code || "—"}
+                                            </span>
+                                            {/* PROGRAM CODE DISPLAY [INDEX: 0.1.6] */}
+                                            {account.program_code && (
+                                                <>
+                                                    <span className="text-slate-300">•</span>
+                                                    <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[10px] font-black font-mono">
+                                                        {account.program_code}
+                                                    </span>
+                                                </>
+                                            )}
                                         </p>
                                     </div>
                                 </div>

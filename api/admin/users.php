@@ -17,22 +17,29 @@ $request_method = $_SERVER['REQUEST_METHOD'];
 switch($request_method) {
     case 'GET':
         try {
-            // CRITICAL FIX: Explicitly include all discrete columns needed for the Edit Modal
+            // FIXED: Expanded the SELECT script with explicit columns and LEFT JOIN dependencies [INDEX: 1]
             $query = "SELECT 
-                        id, 
-                        employee_id, 
-                        first_name, 
-                        middle_name, 
-                        last_name, 
-                        suffix, 
-                        email, 
-                        contact_number, 
-                        department_id, 
-                        role, 
-                        status, 
-                        is_active 
-                      FROM users 
-                      ORDER BY created_at DESC";
+                        u.id, 
+                        u.employee_id, 
+                        u.first_name, 
+                        u.middle_name, 
+                        u.last_name, 
+                        u.suffix, 
+                        u.email, 
+                        u.contact_number, 
+                        u.department_id, 
+                        u.program_id, -- ◄ Added missing column assignment [INDEX: 1]
+                        u.role, 
+                        u.status, 
+                        u.is_active,
+                        d.code AS department_code,
+                        d.name AS department_name,
+                        p.code AS program_code,
+                        p.name AS program_name
+                      FROM users u
+                      LEFT JOIN departments d ON u.department_id = d.id
+                      LEFT JOIN programs p ON u.program_id = p.id
+                      ORDER BY u.created_at DESC";
                       
             $stmt = $db->prepare($query);
             $stmt->execute();
@@ -57,12 +64,20 @@ switch($request_method) {
                     "email" => $row['email'] ?? 'No Email Provided',
                     "contact_number" => isset($row['contact_number']) ? trim(str_replace(["\r", "\n", "\t"], "", $row['contact_number'])) : '',  
                     "department_id" => (int)$row['department_id'],
+                    "program_id" => $row['program_id'] !== null ? (int)$row['program_id'] : null, // ◄ Passed numeric ID to frontend state [INDEX: 1]
                     "role" => $row['role'],
                     "status" => $row['status'],
-                    "is_active" => (int)$row['is_active']
+                    "is_active" => (int)$row['is_active'],
+                    
+                    // ◄ INJECTED COMPANION LABELS TEXT FOR CLEAN DISPLAY ON FRONTEND [INDEX: 1]
+                    "department_code" => $row['department_code'] ?? '—',
+                    "department_name" => $row['department_name'] ?? '',
+                    "program_code"    => $row['program_code'] ?? null,
+                    "program_name"    => $row['program_name'] ?? null
                 ];
             }
             
+            // FIXED: Ensure the response json reads the object wrapper matching your React frontend fetch loops
             echo json_encode(["status" => "success", "data" => $users]);
         } catch (PDOException $e) {
             http_response_code(500);

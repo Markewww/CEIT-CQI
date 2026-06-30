@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { X } from "lucide-react";
 
 interface SystemUser {
     id: number;
@@ -12,9 +13,16 @@ interface SystemUser {
     email: string;
     contact_number: string;
     department_id: number;
+    program_id: number | null;
     role: 'Admin' | 'Faculty' | 'Chairperson' | 'Department Head' | 'Dean';
     status: 'Pending' | 'Approved' | 'Rejected';
     is_active: number;
+}
+
+interface ProgramOption {
+    id: number;
+    code: string;
+    name: string;
 }
 
 interface UserEditModalProps {
@@ -24,7 +32,7 @@ interface UserEditModalProps {
 }
 
 const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpdated }) => {
-    // 1. Core State Definitions Matching Form Variables
+    // 1. Core Controlled Form State
     const [formData, setFormData] = useState({
         id: 0,
         employee_id: "",
@@ -36,15 +44,38 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
         contact_number: "",
         password: "",
         department_id: 0,
+        program_id: null as number | null,
         role: "Faculty" as SystemUser['role'],
         status: "Pending" as SystemUser['status'],
         is_active: 1
     });
 
+    const [programs, setPrograms] = useState<ProgramOption[]>([]);
+    const [isLoadingPrograms, setIsLoadingPrograms] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    // 2. Fetch or Populate Initial Data fields when user prop changes
+    // 2. Fetch Programs based on Selected Department ID
+    const fetchProgramsForDepartment = useCallback(async (deptId: number) => {
+        if (!deptId || deptId === 0) {
+            setPrograms([]);
+            return;
+        }
+        try {
+            setIsLoadingPrograms(true);
+            const res = await fetch(`/cqi/api/helpers/get_cascading_options.php?department_id=${deptId}`);
+            const result = await res.json();
+            if (result.status === "success") {
+                setPrograms(result.programs || []);
+            }
+        } catch (err) {
+            console.error("Failed loading cascading track selections:", err);
+        } finally {
+            setIsLoadingPrograms(false);
+        }
+    }, []);
+
+    // 3. EFFECT BLOCK A: Populate initial user fields when modal target changes
     useEffect(() => {
         if (user) {
             setFormData({
@@ -54,48 +85,75 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                 middle_name: user.middle_name,
                 last_name: user.last_name,
                 suffix: user.suffix,
-                email: user.email,
+                email: user.email || "",
                 contact_number: user.contact_number,
-                password: "", // Kept blank initially
-                department_id: user.department_id, // Use the actual department ID from the user object
+                password: "", 
+                department_id: user.department_id,
+                program_id: user.program_id ? Number(user.program_id) : null, // Numerical casting
                 role: user.role,
                 status: user.status,
                 is_active: user.is_active
             });
             setMessage(null);
+            
+            // Trigger options fetch
+            fetchProgramsForDepartment(user.department_id);
         }
-    }, [user]);
+    }, [user, fetchProgramsForDepartment]);
+    // Place this inside UserEditModal.tsx right before your return statement:
+    useEffect(() => {
+        if (user && programs.length > 0) {
+            const targetProgramId = user.program_id ? Number(user.program_id) : null;
+            const programExists = programs.some(p => p.id === targetProgramId);
 
-    // 3. Structured State Handlers for Standard Controlled Form Inputs
+            if (programExists) {
+                setFormData(prev => ({ ...prev, program_id: targetProgramId }));
+            }
+        }
+    }, [programs, user]); // ◄ Fires instantly the moment the database programs arrive!
+
+    // 5. Form Input Change Handler
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'department_id' ? Number(value) : value
-        }));
+        
+        setFormData(prev => {
+            const updated = {
+                ...prev,
+                [name]: name === 'department_id' || name === 'program_id' 
+                    ? (value === "" || value === "0" ? null : Number(value)) 
+                    : value
+            };
+
+            // If department selection changes, drop old program and fire cascading refresh
+            if (name === "department_id") {
+                updated.program_id = null;
+                fetchProgramsForDepartment(Number(value));
+            }
+
+            return updated;
+        });
+
         if (message) setMessage(null);
     };
 
-    // 4. Form Submission Handler Targeting Your PHP Server Endpoint Matrix
+    // 6. Submit Changes to PHP Backend
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setMessage(null);
-
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/update_user.php", {
+            const response = await fetch("/cqi/api/admin/update_user.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
             });
-
             const result = await response.json();
             if (result.status === "success") {
-                setMessage({ type: 'success', text: "Account profile changes recorded successfully." });
+                setMessage({ type: 'success', text: result.message || "Account profile changes recorded successfully." });
                 setTimeout(() => {
                     onUserUpdated();
                     onClose();
-                }, 1000);
+                }, 1200);
             } else {
                 setMessage({ type: 'error', text: result.message || "Failed to update profile changes." });
             }
@@ -111,18 +169,20 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fade-in">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-2xl w-full overflow-hidden max-h-[90vh] flex flex-col transform scale-up-in">
+                
                 {/* Modal Header */}
                 <div className="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center shrink-0">
                     <div>
                         <h3 className="text-lg font-bold text-slate-900 font-montserrat">Edit System User Matrix</h3>
-                        <p className="text-xs text-slate-500 mt-0.5">Modify database attributes, security clearances, or profile roles.</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Modify database attributes, program clearances, or leadership roles.</p>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold text-lg p-1">✕</button>
+                    <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold p-1 transition-colors"><X className="w-5 h-5" /></button>
                 </div>
 
                 {/* Scrollable Form Body Container */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
-                    {/* Identity Metadata Block */}
+                <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
+                    
+                    {/* Identity Metadata Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Employee ID</label>
@@ -130,14 +190,13 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                                 type="text"
                                 name="employee_id"
                                 value={formData.employee_id}
-                                onChange={handleChange}
-                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors"
-                                required
+                                disabled
+                                className="w-full text-sm font-medium text-slate-400 bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none cursor-not-allowed select-none"
                             />
                         </div>
                     </div>
 
-                    {/* Comprehensive Legal Full Name Parameters */}
+                    {/* Legal Full Name Input Fields Area */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="flex flex-col gap-1 col-span-2 md:col-span-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">First Name</label>
@@ -184,16 +243,17 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                         </div>
                     </div>
 
-                    {/* Communication Identifiers */}
+                    {/* Communication Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Contact Number</label>
                             <input
                                 type="text"
-                                name="contact_number" 
+                                name="contact_number"
                                 value={formData.contact_number}
                                 onChange={handleChange}
                                 className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors"
+                                required
                             />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -208,8 +268,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                         </div>
                     </div>
 
-                    {/* System Parameters (Department, Role, Status) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Dynamic Cascading Dropdown Grid (Department and Program) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department</label>
                             <select
@@ -217,6 +277,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                                 value={formData.department_id}
                                 onChange={handleChange}
                                 className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                                required
                             >
                                 <option value={0} disabled hidden>Select Department</option>
                                 <option value={1}>DIT (Information Technology)</option>
@@ -226,13 +287,39 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                                 <option value={5}>DIET (Industrial Engineering & Technology)</option>
                             </select>
                         </div>
+
+                        {/* CASCADING PROGRAM SELECTOR LAYOUT ELEMENT BOX */}
+                        <div className="flex flex-col gap-1">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                                <span>Assigned Program Track</span>
+                                {isLoadingPrograms && <span className="text-primary font-black animate-pulse text-[10px] lowercase">Syncing list...</span>}
+                            </label>
+                            <select
+                                name="program_id"
+                                value={formData.program_id || 0}
+                                onChange={handleChange}
+                                disabled={programs.length === 0}
+                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors cursor-pointer disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
+                            >
+                                <option value={0}>Not Applicable / None</option>
+                                {programs.map(prog => (
+                                    <option key={prog.id} value={prog.id}>
+                                        {prog.code} — {prog.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Role & System Level Approvals Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">System Role</label>
                             <select
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors"
+                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors cursor-pointer"
                             >
                                 <option value="Admin">Admin</option>
                                 <option value="Faculty">Faculty</option>
@@ -247,7 +334,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
-                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors"
+                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors cursor-pointer"
                             >
                                 <option value="Pending">Pending</option>
                                 <option value="Approved">Approved</option>
@@ -256,7 +343,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                         </div>
                     </div>
 
-                    {/* Security Credentials */}
+                    {/* Change Password Block */}
                     <div className="flex flex-col gap-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Change Password</label>
                         <input
@@ -270,11 +357,11 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                         <span className="text-[10px] text-slate-400 font-medium mt-1">Leave field blank or empty to keep current password unchanged.</span>
                     </div>
 
-                    {/* Account Activation Logic State Switch */}
+                    {/* Account Activation Switch */}
                     <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                         <div className="flex flex-col">
                             <span className="text-xs font-bold text-slate-700">Account Authorization Status</span>
-                            <span className="text-[11px] text-slate-400">Toggle whether to activate this account.</span>
+                            <span className="text-[11px] text-slate-400">Toggle whether to activate this account block.</span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer select-none">
                             <input
@@ -288,29 +375,31 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                         </label>
                     </div>
 
-                    {/* Alert Notification Interface Blocks */}
+                    {/* Trigger Response Message Notification Blocks */}
                     {message && (
-                        <div className={`p-3 rounded-lg text-xs font-medium border ${
-                            message.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-rose-50 border-rose-100 text-rose-700'
+                        <div className={`p-3 rounded-lg text-xs font-medium border animate-fade-in ${
+                            message.type === 'success' 
+                                ? 'bg-emerald-50 border-emerald-100 text-emerald-700' 
+                                : 'bg-rose-50 border-rose-100 text-rose-700'
                         }`}>
                             {message.text}
                         </div>
                     )}
 
-                    {/* Modal Submittal Action Buttons */}
-                    <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    {/* Bottom Modal Actions Toolbar row */}
+                    <div className="pt-4 border-t border-slate-100 flex justify-end gap-2 shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={isSubmitting}
-                            className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-xs px-4 py-2 rounded-lg disabled:opacity-50 transition-colors"
+                            className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-xs px-4 py-2 rounded-lg disabled:opacity-50 transition-colors cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="bg-primary hover:bg-primary-hover text-white font-bold text-xs px-5 py-2 rounded-lg shadow-sm disabled:opacity-50 transition-all flex items-center gap-1.5"
+                            className="bg-primary hover:bg-primary-hover text-white font-bold text-xs px-5 py-2 rounded-lg shadow-sm disabled:opacity-50 transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                             {isSubmitting ? "Saving..." : "Save Changes"}
                         </button>

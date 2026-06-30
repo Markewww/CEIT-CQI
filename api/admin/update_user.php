@@ -45,8 +45,9 @@ if (
 try {
     // 4. Dynamic query compilation based on password criteria
     // If the password string is blank, we skip altering password_hash fields entirely
-    $password_changed = !empty(trim($data['password']));
+    $password_changed = !empty(trim($data['password'] ?? ''));
     
+    // FIXED: Added program_id to the core relational UPDATE fields block
     $query = "UPDATE users SET 
                 employee_id = :employee_id,
                 first_name = :first_name,
@@ -56,6 +57,7 @@ try {
                 email = :email,
                 contact_number = :contact_number,
                 department_id = :department_id,
+                program_id = :program_id,
                 role = :role,
                 status = :status,
                 is_active = :is_active";
@@ -74,9 +76,14 @@ try {
     $stmt->bindValue(':middle_name', !empty($data['middle_name']) ? trim($data['middle_name']) : null, PDO::PARAM_STR);
     $stmt->bindValue(':last_name', trim($data['last_name']));
     $stmt->bindValue(':suffix', !empty($data['suffix']) ? trim($data['suffix']) : null, PDO::PARAM_STR);
-    $stmt->bindValue(':email', trim($data['email']));
+    $stmt->bindValue(':email', !empty(trim($data['email'])) ? trim($data['email']) : null, PDO::PARAM_STR);
     $stmt->bindValue(':contact_number', trim($data['contact_number']));
     $stmt->bindValue(':department_id', (int)$data['department_id'], PDO::PARAM_INT);
+    
+    // FIXED: Bind incoming program_id safely as null integer mapping if it contains an empty value
+    $program_id = !empty($data['program_id']) ? (int)$data['program_id'] : null;
+    $stmt->bindValue(':program_id', $program_id, $program_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+    
     $stmt->bindValue(':role', $data['role']);
     $stmt->bindValue(':status', $data['status']);
     $stmt->bindValue(':is_active', (int)$data['is_active'], PDO::PARAM_INT);
@@ -98,12 +105,26 @@ try {
     }
 
 } catch (PDOException $e) {
+    $error_msg = $e->getMessage();
+    
+    // 7. INTERCEPT THE CUSTOM MARIADB DATABASE TRIGGERS ENFORCEMENT CAP SIGNALS
+    if (strpos($error_msg, 'An active Department Head is already registered') !== false) {
+        http_response_code(409);
+        echo json_encode(["status" => "error", "message" => "This department already contains an active Department Head. To replace them, you must alter the current head's role or deactivate their account first."]);
+        exit();
+    }
+    if (strpos($error_msg, 'An active Chairperson is already assigned') !== false) {
+        http_response_code(409);
+        echo json_encode(["status" => "error", "message" => "This academic program already contains an active Chairperson. To replace them, you must alter the current chair's role or deactivate their account first."]);
+        exit();
+    }
+
     // Elegant error response handling unique keys (e.g. email or employee ID overlaps)
     if ($e->getCode() == 23000) {
         http_response_code(409);
         echo json_encode(["status" => "error", "message" => "Conflict detected. Employee ID or Email belongs to another user."]);
     } else {
         http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "Database engine failure: " . $e->getMessage()]);
+        echo json_encode(["status" => "error", "message" => "Database engine failure: " . $error_msg]);
     }
 }
