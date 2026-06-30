@@ -1,45 +1,101 @@
-const ProgramsTab = () => {
+import React, { useState, useEffect, useCallback } from "react";
+// Import your modular table subcomponent
+import ProgramsTable from "./components/ProgramsTable";
+// IMPORT MODALS: Bring in both creation and modification modules cleanly
+import ProgramCreateModal from "./components/ProgramCreateModal";
+import ProgramEditModal from "./components/ProgramEditModal";
+
+interface ProgramData {
+    id: number;
+    code: string;
+    name: string;
+    department_id: number;
+    department_code: string;
+}
+
+const ProgramsTab: React.FC = () => {
+    const [programs, setPrograms] = useState<ProgramData[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Modal view visibility toggle trackers
+    const [editingProgram, setEditingProgram] = useState<ProgramData | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+
+    // Relational network query to fetch programs combined with their parent departments
+    const fetchPrograms = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const response = await fetch("http://localhost/cqi/api/admin/programs.php");
+            
+            if (!response.ok) {
+                throw new Error(`HTTP network error code: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            if (result.status === "success") {
+                setPrograms(result.data);
+            } else {
+                setError(result.message || "Failed to load degree program records.");
+            }
+        } catch (err: any) {
+            setError(err.message || "Unable to reach database connection endpoint.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Load curriculum data tables upon initial mounting
+    useEffect(() => {
+        fetchPrograms();
+    }, [fetchPrograms]);
+
+    // Handle editing interaction triggers on table row clicks
+    const handleEditClick = (program: ProgramData) => {
+        setEditingProgram(program);
+    };
+
     return (
         <div className="flex flex-col gap-6 w-full animate-fade-in">
+            {/* Header Module Toolbar */}
             <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm">
                 <div>
                     <h2 className="text-xl font-bold text-slate-900 font-montserrat">Manage Programs</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Administer specific degree tracks (e.g., BSIT, BSCS) mapped to respective CEIT departments.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Configure and audit formal college degree tracks, major specs, and curriculum structural lines.</p>
                 </div>
-                <button className="bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm cursor-pointer transition-all">
-                    + Add New Degree Program
+                <button 
+                    onClick={() => setShowCreateModal(true)}
+                    className="bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm cursor-pointer transition-all"
+                >
+                    + Add Program
                 </button>
             </div>
 
-            {/* Academic Program Directory Matrix Sheet */}
-            <div className="w-full bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden">
-                <div className="p-4 bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Active College Curricula Tracks
-                </div>
-                <div className="divide-y divide-slate-100">
-                    <div className="p-4 flex items-center justify-between hover:bg-slate-50/40 transition-colors">
-                        <div>
-                            <h4 className="text-sm font-bold text-slate-900 font-montserrat">BS in Information Technology (BSIT)</h4>
-                            <p className="text-xs text-slate-400 font-medium mt-0.5">Aligned to Department of Information Technology (DIT)</p>
-                        </div>
-                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">4-Year Track</span>
-                    </div>
-                    <div className="p-4 flex items-center justify-between hover:bg-slate-50/40 transition-colors">
-                        <div>
-                            <h4 className="text-sm font-bold text-slate-900 font-montserrat">BS in Computer Science (BSCS)</h4>
-                            <p className="text-xs text-slate-400 font-medium mt-0.5">Aligned to Department of Information Technology (DIT)</p>
-                        </div>
-                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">4-Year Track</span>
-                    </div>
-                    <div className="p-4 flex items-center justify-between hover:bg-slate-50/40 transition-colors">
-                        <div>
-                            <h4 className="text-sm font-bold text-slate-900 font-montserrat">BS in Civil Engineering (BSCE)</h4>
-                            <p className="text-xs text-slate-400 font-medium mt-0.5">Aligned to Department of Civil Engineering & Architecture (DCEA)</p>
-                        </div>
-                        <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-2 py-0.5 rounded">4-Year Track</span>
-                    </div>
-                </div>
-            </div>
+            {/* Central Data Matrix Table Element */}
+            <ProgramsTable 
+                programs={programs} 
+                isLoading={isLoading} 
+                error={error} 
+                onEditClick={handleEditClick}
+            />
+
+            {/* Injected Program Modification Modal */}
+            {editingProgram && (
+                <ProgramEditModal
+                    program={editingProgram}
+                    onClose={() => setEditingProgram(null)}
+                    onProgramUpdated={fetchPrograms}
+                />
+            )} 
+
+            {/* Injected Program Registration Modal */}
+            {showCreateModal && (
+                <ProgramCreateModal
+                    onClose={() => setShowCreateModal(false)}
+                    onProgramCreated={fetchPrograms}
+                />
+            )} 
         </div>
     );
 };

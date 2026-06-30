@@ -21,10 +21,10 @@ const Header = () => {
                 />
                 <div>
                     <h1 className="text-sm font-black tracking-wider font-montserrat uppercase leading-tight">
-                        CQI
+                        Continuous Quality Improvement
                     </h1>
                     <p className="text-xs text-slate-200 mt-0.5 font-medium tracking-wide">
-                        Continuous Quality Improvement
+                        College of Engineering and Information Technology
                     </p>
                 </div>
             </div>

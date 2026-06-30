@@ -211,14 +211,20 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                     {/* System Parameters (Department, Role, Status) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-1">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department ID</label>
-                            <input
-                                type="number"
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Department</label>
+                            <select
                                 name="department_id"
                                 value={formData.department_id}
                                 onChange={handleChange}
-                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors"
-                            />
+                                className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors cursor-pointer"
+                            >
+                                <option value={0} disabled hidden>Select Department</option>
+                                <option value={1}>DIT (Information Technology)</option>
+                                <option value={2}>DCEA (Civil Engineering & Architecture)</option>
+                                <option value={3}>DAE (Agricultural Engineering)</option>
+                                <option value={4}>DEE (Electronics Engineering)</option>
+                                <option value={5}>DIET (Industrial Engineering & Technology)</option>
+                            </select>
                         </div>
                         <div className="flex flex-col gap-1">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">System Role</label>

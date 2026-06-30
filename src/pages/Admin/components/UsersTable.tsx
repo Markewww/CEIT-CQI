@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// Import your new separated edit modal component
 import UserEditModal from "./UserEditModal";
 
 interface SystemUser {
@@ -24,26 +23,21 @@ interface UsersTableProps {
     users: SystemUser[];
     isLoading: boolean;
     error: string | null;
-    onUserUpdated: () => void; // Triggered to refresh parent data on successful database changes
+    onUserUpdated: () => void; 
 }
 
 const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUserUpdated }) => {
+    // Interactive filtering state variables
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [statusFilter, setStatusFilter] = useState<'All' | 'Approved' | 'Pending'>('All');
     // Pagination tracking state setup
     const [currentPage, setCurrentPage] = useState<number>(1);
     const rowsPerPage = 10;
-
     // Modal view tracking states
     const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
     const [userToApprove, setUserToApprove] = useState<SystemUser | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [actionError, setActionError] = useState<string | null>(null);
-
-    // Calculate structural boundary pagination indexes
-    const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentRows = users.slice(indexOfFirstRow, indexOfLastRow);
-    const totalPages = Math.ceil(users.length / rowsPerPage);
-
     // UI badge mapping utilities
     const getRoleBadgeStyle = (role: string) => {
         if (role === 'Admin') return "bg-primary text-white";
@@ -62,18 +56,16 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
         if (!userToApprove) return;
         setIsSubmitting(true);
         setActionError(null);
-
         try {
             const response = await fetch("http://localhost/cqi/api/admin/approve_user.php", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_id: userToApprove.id })
             });
-
             const result = await response.json();
             if (result.status === "success") {
-                setUserToApprove(null); // Close confirmation prompt
-                onUserUpdated();        // Tell parent view matrix to reload DB rows
+                setUserToApprove(null); 
+                onUserUpdated();
             } else {
                 setActionError(result.message || "Failed to update user profile registration state.");
             }
@@ -84,8 +76,92 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
         }
     };
 
+    // Filter data arrays before computing pagination parameters
+    const filteredUsers = users.filter((account) => {
+        // Status matching condition
+        const matchesStatus = statusFilter === 'All' ? true : account.status === statusFilter;
+        // Text keyword search condition
+        const query = searchQuery.toLowerCase().trim();
+        const matchesQuery = query === "" ? true : (
+            account.full_name.toLowerCase().includes(query) ||
+            account.email.toLowerCase().includes(query) ||
+            account.employee_id.toLowerCase().includes(query) ||
+            account.role.toLowerCase().includes(query)
+        );
+
+        return matchesStatus && matchesQuery;
+    });
+
+    // Calculate structural boundary pagination indexes based on filtered rows
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentRows = filteredUsers.slice(indexOfFirstRow, indexOfLastRow);
+    const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+    // Reset pagination to page 1 automatically when a filter changes
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+    const handleFilterChange = (filter: 'All' | 'Approved' | 'Pending') => {
+        setStatusFilter(filter);
+        setCurrentPage(1);
+    };
+    // Calculate how many users are currently pending approval
+    const pendingCount = users.filter(account => account.status === 'Pending').length;
+
     return (
         <div className="w-full bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden flex flex-col relative">
+            {/* INJECTED CONTROL LAYER: Search and Filter Control Deck Toolbar */}
+            <div className="p-4 border-b border-slate-100 bg-slate-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* Search Bar Element Input */}
+                <div className="relative flex-1 max-w-md">
+                    <input
+                        type="text"
+                        placeholder="Search by name, email, or employee ID..."
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        className="w-full text-xs font-medium text-slate-800 bg-white border border-slate-200/80 rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-primary transition-colors placeholder:text-slate-400"
+                    />
+                    {searchQuery && (
+                        <button 
+                            onClick={() => { setSearchQuery(""); setCurrentPage(1); }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+
+                {/* Status Navigation Filter Action Buttons Deck */}
+                <div className="flex items-center gap-1.5 self-start md:self-auto bg-slate-100/80 p-1 rounded-lg border border-slate-200/40">
+                    {(['All', 'Approved', 'Pending'] as const).map((filter) => {
+                        const isPendingFilter = filter === 'Pending';
+
+                        return (
+                            <button
+                                key={filter}
+                                type="button"
+                                onClick={() => handleFilterChange(filter)}
+                                // Added relative class layout anchor point to support absolute badge popups
+                                className={`relative text-xs font-bold px-3 py-1.5 rounded-md transition-all ${
+                                    statusFilter === filter
+                                        ? "bg-white text-slate-900 shadow-sm border border-slate-200/30"
+                                        : "text-slate-500 hover:text-slate-800"
+                                }`}
+                            >
+                                {filter}
+                            
+                                {/* Render the notification bubble badge only on the Pending button if count > 0 */}
+                                {isPendingFilter && pendingCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-100 animate-pulse">
+                                        {pendingCount}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
             {/* Header Status Bar Summary */}
             <div className="p-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Registered System Users</span>
