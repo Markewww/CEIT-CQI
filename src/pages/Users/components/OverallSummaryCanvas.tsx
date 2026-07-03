@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface OverallRow {
     co_name: string;
@@ -19,7 +20,7 @@ const OverallSummaryCanvas: React.FC<OverallSummaryCanvasProps> = ({ scheduleId 
     const loadOverallSummary = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`http://localhost/cqi/api/faculty/overall_summary.php?schedule_id=${scheduleId}`);
+            const res = await fetch(`${APIconfig}/faculty/overall_summary.php?schedule_id=${scheduleId}`);
             const out = await res.json();
             if (out.status === "success") {
                 setRows(out.summary_data || []);

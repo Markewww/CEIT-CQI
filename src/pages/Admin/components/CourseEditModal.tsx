@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface CourseData {
     id: number;
@@ -52,7 +53,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({ course, onClose, onCo
         setMessage(null);
 
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/update_course.php", {
+            const response = await fetch(`${APIconfig}/admin/update_course.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

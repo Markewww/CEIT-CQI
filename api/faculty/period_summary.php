@@ -84,7 +84,7 @@ if ($method === 'GET') {
         }
 
         // --- STANDARD UNIFIED SECTIONS (ILO & CO Summary GET pipelines continue unchanged below) ---
-        $s_stmt = $db->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'attainment_target_percentage' LIMIT 1");
+        $s_stmt = $db->prepare("SELECT setting_value FROM system_settings WHERE setting_key = 'target_attainment_percentage' LIMIT 1");
         $s_stmt->execute();
         $setting = $s_stmt->fetch(PDO::FETCH_ASSOC);
         $target_percentage = $setting ? (float)$setting['setting_value'] : 40.0;

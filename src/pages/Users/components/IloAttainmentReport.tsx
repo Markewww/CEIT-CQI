@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle, AlertCircle } from "lucide-react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface IloItemRow {
     ilo_name: string;
@@ -25,7 +26,7 @@ const IloAttainmentReport: React.FC<IloAttainmentReportProps> = ({ scheduleId, p
     const loadIloReportMetrics = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`http://localhost/cqi/api/faculty/ilo_analysis.php?schedule_id=${scheduleId}&period=${period}`);
+            const res = await fetch(`${APIconfig}/faculty/ilo_analysis.php?schedule_id=${scheduleId}&period=${period}`);
             const out = await res.json();
             if (out.status === "success") {
                 setReport(out.report_data || []);
@@ -45,7 +46,7 @@ const IloAttainmentReport: React.FC<IloAttainmentReportProps> = ({ scheduleId, p
     const handleCellBlur = async (itemNumber: number, field: "ilo_name" | "action_plan", updatedValue: string) => {
         setSyncingRow(itemNumber);
         try {
-            await fetch("http://localhost/cqi/api/faculty/ilo_analysis.php", {
+            await fetch(`${APIconfig}/faculty/ilo_analysis.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface DepartmentCreateModalProps {
     onClose: () => void;
@@ -32,7 +33,7 @@ const DepartmentCreateModal: React.FC<DepartmentCreateModalProps> = ({ onClose, 
         setMessage(null);
 
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/create_department.php", {
+            const response = await fetch(`${APIconfig}/admin/create_department.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)

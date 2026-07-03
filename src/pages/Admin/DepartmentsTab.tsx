@@ -3,6 +3,7 @@ import DepartmentsTable from "./components/DepartmentsTable";
 import DepartmentEditModal from "./components/DepartmentEditModal";
 // 1. IMPORT MODAL: Load the creation overlay view component
 import DepartmentCreateModal from "./components/DepartmentCreateModal";
+import { APIconfig } from "@/config/apiConfig";
 
 interface DepartmentData {
     id: number;
@@ -24,7 +25,7 @@ const DepartmentsTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch("http://localhost/cqi/api/admin/departments.php");
+            const response = await fetch(`${APIconfig}/admin/departments.php`);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);

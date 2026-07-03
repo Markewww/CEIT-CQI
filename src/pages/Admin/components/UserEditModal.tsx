@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface SystemUser {
     id: number;
@@ -63,7 +64,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
         }
         try {
             setIsLoadingPrograms(true);
-            const res = await fetch(`/cqi/api/helpers/get_cascading_options.php?department_id=${deptId}`);
+            const res = await fetch(`${APIconfig}/helpers/get_cascading_options.php?department_id=${deptId}`);
             const result = await res.json();
             if (result.status === "success") {
                 setPrograms(result.programs || []);
@@ -142,7 +143,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
         setIsSubmitting(true);
         setMessage(null);
         try {
-            const response = await fetch("/cqi/api/admin/update_user.php", {
+            const response = await fetch(`${APIconfig}/admin/update_user.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)

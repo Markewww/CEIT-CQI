@@ -1,0 +1,1 @@
+export const APIconfig = "http://localhost/cqi/api";

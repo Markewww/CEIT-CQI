@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import UserEditModal from "./UserEditModal";
+import { APIconfig } from "@/config/apiConfig";
 
 interface SystemUser {
     id: number;
@@ -60,7 +61,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
         setIsSubmitting(true);
         setActionError(null);
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/approve_user.php", {
+            const response = await fetch(`${APIconfig}/admin/approve_user.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_id: userToApprove.id })

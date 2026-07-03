@@ -4,6 +4,7 @@ import ProgramsTable from "./components/ProgramsTable";
 // IMPORT MODALS: Bring in both creation and modification modules cleanly
 import ProgramCreateModal from "./components/ProgramCreateModal";
 import ProgramEditModal from "./components/ProgramEditModal";
+import { APIconfig } from "@/config/apiConfig";
 
 interface ProgramData {
     id: number;
@@ -27,7 +28,7 @@ const ProgramsTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch("http://localhost/cqi/api/admin/programs.php");
+            const response = await fetch(`${APIconfig}/admin/programs.php`);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);

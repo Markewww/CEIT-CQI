@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface Student {
     student_id: string;
@@ -19,7 +20,7 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
 
     const loadAnalysisMatrix = useCallback(async () => {
         try {
-            const res = await fetch(`http://localhost/cqi/api/faculty/test_analysis.php?schedule_id=${scheduleId}&period=${period}`);
+            const res = await fetch(`${APIconfig}/faculty/test_analysis.php?schedule_id=${scheduleId}&period=${period}`);
             const out = await res.json();
             if (out.status === "success") {
                 setTotalItems(out.total_items);
@@ -43,7 +44,7 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
         setIsSaving(true);
         setAlertMessage(null);
         try {
-            const res = await fetch("http://localhost/cqi/api/faculty/test_analysis.php", {
+            const res = await fetch(`${APIconfig}/faculty/test_analysis.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ schedule_id: scheduleId, period, total_items: totalItems })
@@ -78,7 +79,7 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
         setIsSaving(true);
 
         try {
-            const res = await fetch("http://localhost/cqi/api/faculty/test_analysis.php", {
+            const res = await fetch(`${APIconfig}/faculty/test_analysis.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

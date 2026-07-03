@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface SummaryRow {
     co_name: string;
@@ -22,7 +23,7 @@ const IloSummaryDashboard: React.FC<IloSummaryDashboardProps> = ({ scheduleId, p
     const loadIloSummary = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`http://localhost/cqi/api/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}`);
+            const res = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}`);
             const out = await res.json();
             if (out.status === "success") {
                 setSummaryRows(out.summary_data || []);
@@ -49,7 +50,7 @@ const IloSummaryDashboard: React.FC<IloSummaryDashboardProps> = ({ scheduleId, p
     const handleCoBlur = async (iloName: string, finalValue: string) => {
         setSyncingKey(iloName);
         try {
-            await fetch("http://localhost/cqi/api/faculty/period_summary.php", {
+            await fetch(`${APIconfig}/faculty/period_summary.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

@@ -4,6 +4,7 @@ import CoursesTable from "./components/CoursesTable";
 // IMPORT MODALS: Bring in both creation and modification modules cleanly
 import CourseCreateModal from "./components/CourseCreateModal";
 import CourseEditModal from "./components/CourseEditModal";
+import { APIconfig } from "@/config/apiConfig";
 
 interface CourseData {
     id: number;
@@ -25,7 +26,7 @@ const CoursesTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch("http://localhost/cqi/api/admin/courses.php");
+            const response = await fetch(`${APIconfig}/admin/courses.php`);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);

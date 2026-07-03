@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface ScheduleData {
     id: number;
@@ -65,9 +66,9 @@ const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({ schedule, onClose
         const fetchAllLookups = async () => {
             try {
                 const [resCourses, resPrograms, resUsers] = await Promise.all([
-                    fetch("http://localhost/cqi/api/admin/courses.php").then(r => r.json()),
-                    fetch("http://localhost/cqi/api/admin/programs.php").then(r => r.json()),
-                    fetch("http://localhost/cqi/api/admin/users.php").then(r => r.json())
+                    fetch(`${APIconfig}/admin/courses.php`).then(r => r.json()),
+                    fetch(`${APIconfig}/admin/programs.php`).then(r => r.json()),
+                    fetch(`${APIconfig}/admin/users.php`).then(r => r.json())
                 ]);
 
                 if (resCourses.status === "success") setCourses(resCourses.data);
@@ -134,7 +135,7 @@ const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({ schedule, onClose
         setMessage(null);
 
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/update_schedule.php", {
+            const response = await fetch(`${APIconfig}/admin/update_schedule.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

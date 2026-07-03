@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface ScheduleData {
     id: number;
@@ -35,7 +36,7 @@ const FacultySchedules: React.FC<FacultySchedulesProps> = ({ employeeId, onClass
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch(`http://localhost/cqi/api/faculty/my_schedules.php?employee_id=${encodeURIComponent(employeeId)}`);
+            const response = await fetch(`${APIconfig}/faculty/my_schedules.php?employee_id=${encodeURIComponent(employeeId)}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code status: ${response.status}`);

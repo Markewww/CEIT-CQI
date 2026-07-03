@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface DepartmentDropdownData {
     id: number;
@@ -29,7 +30,7 @@ const ProgramCreateModal: React.FC<ProgramCreateModalProps> = ({ onClose, onProg
     useEffect(() => {
         const loadDepartments = async () => {
             try {
-                const response = await fetch("http://localhost/cqi/api/admin/departments.php");
+                const response = await fetch(`${APIconfig}/admin/departments.php`);
                 const result = await response.json();
                 if (result.status === "success") {
                     setDepartments(result.data);
@@ -64,7 +65,7 @@ const ProgramCreateModal: React.FC<ProgramCreateModalProps> = ({ onClose, onProg
         setMessage(null);
 
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/create_program.php", {
+            const response = await fetch(`${APIconfig}/admin/create_program.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

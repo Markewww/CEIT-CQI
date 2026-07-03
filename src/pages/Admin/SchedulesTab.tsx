@@ -4,6 +4,7 @@ import SchedulesTable from "./components/SchedulesTable";
 // IMPORT MODALS: Bring in both creation and modification modules cleanly
 import ScheduleCreateModal from "./components/ScheduleCreateModal";
 import ScheduleEditModal from "./components/ScheduleEditModal";
+import { APIconfig } from "@/config/apiConfig";
 
 interface ScheduleData {
     id: number;
@@ -37,7 +38,7 @@ const SchedulesTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch("http://localhost/cqi/api/admin/schedules.php");
+            const response = await fetch(`${APIconfig}/admin/schedules.php`);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);

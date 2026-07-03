@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Printer, Loader2 } from "lucide-react";
-import cvsuHeaderAsset from "@/assets/cvsu-header-HD.png";
+import cvsuHeaderAsset from "@/assets/cvsu-header-bagong-pilipinas-HD.png";
+import { APIconfig } from "@/config/apiConfig";
 
 interface PrintPeriodSummaryProps {
     scheduleId: string;
@@ -47,16 +48,16 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
             }
 
             // 2. Fetch records sequentially to avoid parallel query race condition lockouts [INDEX: 0.1.8]
-            const resIlo = await fetch(`/cqi/api/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=ilo_summary`);
+            const resIlo = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=ilo_summary`);
             const dataIlo = await resIlo.json();
 
-            const resCo = await fetch(`/cqi/api/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
+            const resCo = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
             const dataCo = await resCo.json();
 
-            const resAction = await fetch(`/cqi/api/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
+            const resAction = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
             const dataAction = await resAction.json();
 
-            const resSig = await fetch(`/cqi/api/faculty/get_signatories.php?schedule_id=${scheduleId}&_t=${Date.now()}`); // ◄ FORCE FRESH FETCH
+            const resSig = await fetch(`${APIconfig}/faculty/get_signatories.php?schedule_id=${scheduleId}&_t=${Date.now()}`); // ◄ FORCE FRESH FETCH
             const dataSig = await resSig.json();
 
             const iloData: IloRow[] = dataIlo.summary_data || [];
@@ -93,7 +94,6 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                         line-height: 1.4; 
                     }
                             
-                    /* BRAND IMAGE HEADER: Shifted upward with minimal margins */
                     .header-banner-container { 
                         width: 100%; 
                         text-align: center; 
@@ -101,7 +101,7 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                         margin-bottom: 20px; /* Reduced bottom gap space layout */
                     }
                     .header-banner-container img { 
-                        width: 45%; 
+                        width: 100%; 
                         height: auto; 
                         max-width: 100%; 
                         display: block; 
@@ -111,7 +111,7 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                         font-size: 8px; /* Slightly more compact descriptive subtext font size */
                         font-weight: 600; 
                         color: #64748b; 
-                        text-align: center; 
+                        text-align: left; 
                         margin-top: 6px; 
                         text-transform: uppercase; 
                         letter-spacing: 0.5px; 
@@ -122,13 +122,14 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                         page-break-inside: avoid; 
                     }
                     .section-title { 
-                        font-size: 10px; /* Streamlined title heading font size */
+                        font-size: 10px;
                         font-weight: 900; 
                         text-transform: uppercase; 
                         margin-bottom: 8px; 
                         color: #0f172a; 
                         border-left: 3px solid #1b4d3e; 
                         padding-left: 6px; 
+                        text-align: left;
                     }
                             
                     table { 
@@ -199,6 +200,8 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                         color: #0f172a; 
                         margin-top: 20px; 
                         text-transform: uppercase; 
+                        text-align: center;
+                        margin-right: 60px;
                     }
                     .sig-underline-marker { 
                         width: 85%; 
@@ -210,8 +213,8 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                 <body>
                     <div class="header-banner-container">
                         ${headerBase64 ? `<img src="${headerBase64}" alt="CvSU Academic Header Branding" />` : ""}
-                        <div class="metadata-subtitle">Class Schedule ID: ${scheduleId} • Compiled on: ${new Date().toLocaleDateString()}</div>
-                    </div>
+                        <div class="metadata-subtitle">Class Schedule ID: ${scheduleId}</div>
+                        <div class="metadata-subtitle"> Compiled on: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
 
                     <!-- 1. LEARNING OUTCOME COMPILATION TABLE [INDEX: 0.1.10] -->
                     <div class="section">
@@ -300,11 +303,13 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                                 <div class="sig-meta-header">Prepared By:</div>
                                 <div class="sig-printed-name">${currentUserName}</div>
                                 <div class="sig-underline-marker"></div>
+                                <div class="sig-meta-header" style="margin-top: 4px; font-size: 7.5px; color: #64748b; text-align: center; margin-right: 55px;">Faculty Member</div>
                             </td>
                             <td class="signatory-row-block">
                                 <div class="sig-meta-header">Assessed By:</div>
                                 <div class="sig-printed-name">${chairPerson}</div>
                                 <div class="sig-underline-marker"></div>
+                                <div class="sig-meta-header" style="margin-top: 4px; font-size: 7.5px; color: #64748b; text-align: center; margin-right: 55px;">Program Coordinator</div>
                             </td>
                         </tr>
                         <tr>
@@ -312,11 +317,13 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                                 <div class="sig-meta-header">Endorsed By:</div>
                                 <div class="sig-printed-name">${deptHead}</div>
                                 <div class="sig-underline-marker"></div>
+                                <div class="sig-meta-header" style="margin-top: 4px; font-size: 7.5px; color: #64748b; text-align: center; margin-right: 55px;">Department Chairperson</div>
                             </td>
                             <td class="signatory-row-block" style="padding-top: 20px;">
                                 <div class="sig-meta-header">Noted By:</div>
                                 <div class="sig-printed-name">${deanName}</div>
                                 <div class="sig-underline-marker"></div>
+                                <div class="sig-meta-header" style="margin-top: 4px; font-size: 7.5px; color: #64748b; text-align: center; margin-right: 55px;">College Dean</div>
                             </td>
                         </tr>
                     </table>

@@ -5,6 +5,7 @@ import TestAnalysisGrid from "./TestAnalysisGrid";
 import IloAttainmentReport from "./IloAttainmentReport"; 
 import PeriodSummaryContainer from "./PeriodSummaryContainer";
 import OverallSummaryCanvas from "./OverallSummaryCanvas";
+import { APIconfig } from "@/config/apiConfig";
 
 interface ClassInfo {
     schedule_id: string;
@@ -46,7 +47,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
     const loadClassDetails = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`http://localhost/cqi/api/faculty/class_details.php?schedule_id=${encodeURIComponent(scheduleId)}`);
+            const response = await fetch(`${APIconfig}/faculty/class_details.php?schedule_id=${encodeURIComponent(scheduleId)}`);
             const result = await response.json();
             if (result.status === "success") {
                 setClassInfo(result.class_info);
@@ -67,7 +68,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
 
     const sendBatchToDatabase = async (batch: any[]) => {
         try {
-            const res = await fetch("http://localhost/cqi/api/faculty/manage_roster.php", {
+            const res = await fetch(`${APIconfig}/faculty/manage_roster.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ is_batch: true, schedule_id: scheduleId, students: batch })
@@ -133,7 +134,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
             return;
         }
         try {
-            const res = await fetch("http://localhost/cqi/api/faculty/manage_roster.php", {
+            const res = await fetch(`${APIconfig}/faculty/manage_roster.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ schedule_id: scheduleId, student_id: manualForm.student_id.trim(), full_name: manualForm.full_name.trim() })
@@ -156,7 +157,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
         const confirmDelete = window.confirm(`Are you sure you want to remove ${studentName} (${studentId}) from this class roster?`);
         if (!confirmDelete) return;
         try {
-            const res = await fetch("http://localhost/cqi/api/faculty/delete_student.php", {
+            const res = await fetch(`${APIconfig}/faculty/delete_student.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ schedule_id: scheduleId, student_id: studentId })

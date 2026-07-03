@@ -90,7 +90,7 @@ if ($method === 'GET') {
                 "total_students" => $total_students,
                 "attainment_score" => $attainment_score,
                 "attainment_target" => $target_percentage,
-                "remarks" => $attainment_score >= $target_percentage ? "ATTAINED" : "NOT NOT ATTAINED",
+                "remarks" => $attainment_score >= $target_percentage ? "ATTAINED" : "NOT ATTAINED",
                 "action_plan" => $user_plan
             ];
         }

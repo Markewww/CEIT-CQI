@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface UserCreateModalProps {
     onClose: () => void;
@@ -67,7 +68,7 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ onClose, onUserCreate
         const fetchPrograms = async () => {
             try {
                 setIsLoadingPrograms(true);
-                const res = await fetch(`/cqi/api/helpers/get_cascading_options.php?department_id=${deptId}`);
+                const res = await fetch(`${APIconfig}/helpers/get_cascading_options.php?department_id=${deptId}`);
                 const result = await res.json();
                 if (result.status === "success") {
                     setPrograms(result.programs || []);
@@ -119,7 +120,7 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ onClose, onUserCreate
 
         try {
             // FIXED: Rerouted destination target to call your central update pipeline register endpoint via relative proxies [INDEX: 1]
-            const response = await fetch("/cqi/api/register.php", {
+            const response = await fetch(`${APIconfig}/register.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(submissionPayload)

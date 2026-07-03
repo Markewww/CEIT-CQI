@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APIconfig } from "@/config/apiConfig"; // Import the API configuration
 
 interface ActiveTermFormProps {
     userName: string;
@@ -14,7 +15,7 @@ const ActiveTermForm: React.FC<ActiveTermFormProps> = ({ userName }) => {
     useEffect(() => {
         const fetchActiveTerm = async () => {
             try {
-                const response = await fetch("http://localhost/cqi/api/admin/active_term.php");
+                const response = await fetch(`${APIconfig}/admin/active_term.php`);
                 const data = await response.json();
                 if (data.status === "success" && data.data) {
                     setAcademicYear(data.data.academic_year || "");
@@ -37,7 +38,7 @@ const ActiveTermForm: React.FC<ActiveTermFormProps> = ({ userName }) => {
         setMessage(null);
 
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/active_term.php", {
+            const response = await fetch(`${APIconfig}/admin/active_term.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

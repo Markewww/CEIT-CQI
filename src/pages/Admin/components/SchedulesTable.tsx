@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 interface ScheduleData {
     id: number;
-    schedule_id: string; // Synced with new manual database column configuration
+    schedule_id: string;
     course_id: number;
     course_code: string;
     course_description: string;

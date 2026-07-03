@@ -4,6 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import layatdiwa from "@/assets/layatdiwa.jpeg";
 import cvsuLogo from "@/assets/cvsu-logo.png"; 
 
+import { APIconfig } from "@/config/apiConfig"; // Import the API configuration
+
 const Login = () => {
     const navigate = useNavigate();
     const { loginContext } = useAuth();
@@ -26,7 +28,7 @@ const Login = () => {
     e.preventDefault();
     
     try {
-        const response = await fetch("http://localhost/cqi/api/login.php", {
+        const response = await fetch(`${APIconfig}/login.php`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

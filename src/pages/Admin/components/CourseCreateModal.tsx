@@ -1,3 +1,4 @@
+import { APIconfig } from "@/config/apiConfig";
 import React, { useState } from "react";
 
 interface CourseCreateModalProps {
@@ -32,7 +33,7 @@ const CourseCreateModal: React.FC<CourseCreateModalProps> = ({ onClose, onCourse
         setMessage(null);
 
         try {
-            const response = await fetch("http://localhost/cqi/api/admin/create_course.php", {
+            const response = await fetch(`${APIconfig}/admin/create_course.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

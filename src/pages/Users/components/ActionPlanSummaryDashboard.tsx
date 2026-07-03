@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface ActionSummaryRow {
     ilo_name: string;
@@ -20,7 +21,7 @@ const ActionPlanSummaryDashboard: React.FC<ActionPlanSummaryProps> = ({ schedule
     const loadActionSummary = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`http://localhost/cqi/api/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
+            const res = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
             const out = await res.json();
             if (out.status === "success") {
                 setSummaryRows(out.summary_data || []);
@@ -45,7 +46,7 @@ const ActionPlanSummaryDashboard: React.FC<ActionPlanSummaryProps> = ({ schedule
     const handleCellBlur = async (iloName: string, field: "proposed_timeline" | "comment", value: string) => {
         setSyncingKey(iloName);
         try {
-            await fetch("http://localhost/cqi/api/faculty/period_summary.php", {
+            await fetch(`${APIconfig}/faculty/period_summary.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

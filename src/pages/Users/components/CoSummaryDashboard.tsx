@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface CoSummaryRow {
     co_name: string;
@@ -21,7 +22,7 @@ const CoSummaryDashboard: React.FC<CoSummaryDashboardProps> = ({ scheduleId, per
         try {
             setIsLoading(true);
             // Appends action=co_summary to request the compiled group calculations [INDEX: 0.1.5]
-            const res = await fetch(`http://localhost/cqi/api/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
+            const res = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
             const out = await res.json();
             if (out.status === "success") {
                 setSummaryRows(out.summary_data || []);

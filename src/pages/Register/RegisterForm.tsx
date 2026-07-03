@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APIconfig } from "@/config/apiConfig"; // Import the API configuration
 
 interface RegisterFormProps {
     onBackToLogin: () => void;
@@ -59,7 +60,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onSubmitSucc
         const fetchPrograms = async () => {
             try {
                 setIsLoadingPrograms(true);
-                const res = await fetch(`/cqi/api/helpers/get_cascading_options.php?department_id=${deptId}`);
+                const res = await fetch(`${APIconfig}/helpers/get_cascading_options.php?department_id=${deptId}`);
                 const result = await res.json();
                 if (result.status === "success") {
                     setPrograms(result.programs || []);
@@ -95,7 +96,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onSubmitSucc
         };
 
         try {
-            const response = await fetch("/cqi/api/register.php", {
+            const response = await fetch(`${APIconfig}/register.php`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(registrationPayload)

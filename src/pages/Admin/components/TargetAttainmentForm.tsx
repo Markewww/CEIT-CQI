@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APIconfig } from "@/config/apiConfig";
 
 interface TargetAttainmentFormProps {
     activeDept: string;
@@ -19,7 +20,7 @@ const TargetAttainmentForm: React.FC<TargetAttainmentFormProps> = ({ activeDept,
         const fetchThreshold = async () => {
             try {
                 // Hits your single PHP endpoint file directly
-                const response = await fetch(`http://localhost/cqi/api/admin/attainment.php?department_code=${activeDept}`);
+                const response = await fetch(`${APIconfig}/admin/attainment.php?department_code=${activeDept}`);
                 const data = await response.json();
                 if (data.status === "success") {
                     setAttainment(data.value);
@@ -58,7 +59,7 @@ const TargetAttainmentForm: React.FC<TargetAttainmentFormProps> = ({ activeDept,
         setMessage(null);
 
         try {
-            const response = await fetch(`http://localhost/cqi/api/admin/attainment.php`, {
+            const response = await fetch(`${APIconfig}/admin/attainment.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
