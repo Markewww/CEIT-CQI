@@ -276,7 +276,7 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 18%; text-align: center;">Intended LO #</th>
+                                    <th style="width: 18%; text-align: center;">ILO NUMBER</th>
                                     <th style="width: 44%;">Action Plan Summary</th>
                                     <th style="width: 18%; text-align: center;">Proposed Timeline</th>
                                     <th style="width: 20%;">Comment Remarks</th>

@@ -112,8 +112,8 @@ const FacultySchedules: React.FC<FacultySchedulesProps> = ({ employeeId, onClass
                                             Year {sched.year_level} — Section {sched.section}
                                         </span>
                                     </div>
-                                    <span className="text-[10px] text-slate-400 font-mono font-bold uppercase">
-                                        Ref: {sched.schedule_id}
+                                    <span className="text-[12px] text-slate-400 font-mono font-bold uppercase">
+                                        Schedule ID: {sched.schedule_id}
                                     </span>
                                 </div>
                                 <h4 className="text-sm font-black text-slate-900 mt-3 font-montserrat group-hover:text-primary transition-colors">

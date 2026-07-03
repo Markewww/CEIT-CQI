@@ -82,7 +82,7 @@ const ActionPlanSummaryDashboard: React.FC<ActionPlanSummaryProps> = ({ schedule
                         <table className="w-full text-left border-collapse select-none">
                             <thead>
                                 <tr className="bg-white border-b-2 border-slate-200 text-xs font-black text-slate-800 uppercase tracking-wider font-montserrat">
-                                    <th className="p-4 border-r border-slate-100 w-36 text-center">INTENDED LO #</th>
+                                    <th className="p-4 border-r border-slate-100 w-36 text-center">ILO NUMBER</th>
                                     <th className="p-4 border-r border-slate-100 max-w-sm">ACTION PLAN SUMMARY</th>
                                     <th className="p-4 border-r border-slate-100 w-60 text-center">PROPOSED TIMELINE</th>
                                     <th className="p-4">COMMENT REMARKS</th>
