@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig"; // Import the API configuration
+import { API_ENDPOINTS } from "@/config/apiConfig"; // Import the API configuration
 
 interface RegisterFormProps {
     onBackToLogin: () => void;
@@ -52,15 +52,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onSubmitSucc
     useEffect(() => {
         const deptId = getDepartmentIdByCode(department);
         if (deptId === 0) {
-            setPrograms([]);
-            setProgramId("0");
+            setTimeout(() => {
+                setPrograms([]);
+                setProgramId("0");
+            }, 0);
             return;
         }
 
         const fetchPrograms = async () => {
             try {
                 setIsLoadingPrograms(true);
-                const res = await fetch(`${APIconfig}/helpers/get_cascading_options.php?department_id=${deptId}`);
+                const res = await fetch(`${API_ENDPOINTS.CASCADING_OPTIONS}?department_id=${deptId}`);
                 const result = await res.json();
                 if (result.status === "success") {
                     setPrograms(result.programs || []);
@@ -96,7 +98,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onSubmitSucc
         };
 
         try {
-            const response = await fetch(`${APIconfig}/register.php`, {
+            const response = await fetch(API_ENDPOINTS.REGISTER, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(registrationPayload)
