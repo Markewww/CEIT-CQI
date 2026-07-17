@@ -16,7 +16,7 @@ interface SystemUser {
     contact_number: string;
     department_id: number;
     program_id: number | null;
-    role: 'Admin' | 'Faculty' | 'Chairperson' | 'Department Head' | 'Dean';
+    role: 'Admin' | 'Faculty' | 'Program Head' | 'Department Chairperson' | 'College Dean';
     status: 'Pending' | 'Approved' | 'Rejected';
     is_active: number;
     department_code: string;
@@ -212,7 +212,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
                                     <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm transition-transform group-hover:scale-105 ${
                                         account.role === 'Admin' 
                                             ? 'bg-primary/10 text-primary' 
-                                            : account.role === 'Chairperson' || account.role === 'Dean'
+                                            : account.role === 'Program Head' || account.role === 'College Dean'
                                                 ? 'bg-blue-500/10 text-blue-700' 
                                                 : 'bg-amber-500/10 text-amber-700'
                                     }`}>

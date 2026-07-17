@@ -15,7 +15,7 @@ interface SystemUser {
     contact_number: string;
     department_id: number;
     program_id: number | null;
-    role: 'Admin' | 'Faculty' | 'Chairperson' | 'Department Head' | 'Dean';
+    role: 'Admin' | 'Faculty' | 'Program Head' | 'Department Chairperson' | 'College Dean';
     status: 'Pending' | 'Approved' | 'Rejected';
     is_active: number;
 }
@@ -331,9 +331,9 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                             >
                                 <option value="Admin">Admin</option>
                                 <option value="Faculty">Faculty</option>
-                                <option value="Chairperson">Chairperson</option>
-                                <option value="Department Head">Department Head</option>
-                                <option value="Dean">Dean</option>
+                                <option value="Program Head">Program Head</option>
+                                <option value="Department Chairperson">Department Chairperson</option>
+                                <option value="College Dean">College Dean</option>
                             </select>
                         </div>
                         <div className="flex flex-col gap-1">

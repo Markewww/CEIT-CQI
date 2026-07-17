@@ -173,11 +173,11 @@ class AuthController {
             // 📍 INTERCEPT THE CUSTOM MARIADB DATABASE TRIGGERS UNIQ SIGNALS [INDEX: 1]
             if (strpos($error_msg, 'An active Department Head is already registered') !== false) {
                 http_response_code(409);
-                return ["status" => "error", "message" => "This department already contains an active Department Head. To replace them, you must alter the current head's role or deactivate their account first."];
+                return ["status" => "error", "message" => "This department already contains an active Department Chairperson. To replace them, you must alter the current head's role or deactivate their account first."];
             }
             if (strpos($error_msg, 'An active Chairperson is already assigned') !== false) {
                 http_response_code(409);
-                return ["status" => "error", "message" => "This academic program already contains an active Chairperson. To replace them, you must alter the current chair's role or deactivate their account first."];
+                return ["status" => "error", "message" => "This academic program already contains an active Program Head. To replace them, you must alter the current chair's role or deactivate their account first."];
             }
 
             // Fallback unique constraint conflicts checker (employee_id, username, email)

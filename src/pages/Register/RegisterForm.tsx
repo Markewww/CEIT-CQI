@@ -232,9 +232,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onSubmitSucc
                     className="w-full text-black py-2 bg-transparent border-b border-slate-300 outline-none focus:outline-none focus:border-primary transition-colors text-base cursor-pointer"
                 >
                     <option value="Faculty" className="text-black">Faculty Member</option>
-                    <option value="Chairperson" className="text-black">Program Chairperson</option>
-                    <option value="Department Head" className="text-black">Department Head</option>
-                    <option value="Dean" className="text-black">College Dean</option>
+                    <option value="Program Head" className="text-black">Program Head</option>
+                    <option value="Department Chairperson" className="text-black">Department Chairperson</option>
+                    <option value="College Dean" className="text-black">College Dean</option>
                 </select>
             </div>
 

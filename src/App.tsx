@@ -22,7 +22,7 @@ export default function App() {
         <Route 
           path="/Users/Dashboard" 
           element={
-            <ProtectedRoute allowedRoles={['Faculty', 'Chairperson', 'Department Head', 'Dean']}>
+            <ProtectedRoute allowedRoles={['Faculty', 'Program Head', 'Department Chairperson', 'College Dean']}>
               <UsersDashboard />
             </ProtectedRoute>
           } 

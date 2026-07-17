@@ -17,7 +17,7 @@ interface SystemUser {
     contact_number: string;
     department_id: number;
     program_id: number | null;
-    role: 'Admin' | 'Faculty' | 'Chairperson' | 'Department Head' | 'Dean';
+    role: 'Admin' | 'Faculty' | 'Program Head' | 'Department Chairperson' | 'College Dean';
     status: 'Pending' | 'Approved' | 'Rejected';
     is_active: number;
     department_code: string;

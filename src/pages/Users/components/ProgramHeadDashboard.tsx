@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "@/config/apiConfig";
 import { ShieldAlert, CheckCircle2, AlertCircle, Clock, ExternalLink, RefreshCw } from "lucide-react";
-import ClassWorkspace from "./ClassWorkspace"; // Reuses your main workspace directly! [INDEX: 0.1.94]
+import ClassWorkspace from "./ClassWorkspace"; // Reuses your robust workspace view natively! [INDEX: 0.1.69]
 
-interface DeptClass {
+interface MonitoredClass {
     id: number;
     schedule_code: string;
-    program_code: string;
     course_code: string;
     course_name: string;
     section: string;
@@ -16,25 +15,25 @@ interface DeptClass {
     finals_status: "Completed" | "In Progress" | "Pending";
 }
 
-const DepartmentHeadDashboard: React.FC = () => {
-    const [classes, setClasses] = useState<DeptClass[]>([]);
+const ProgramHeadDashboard: React.FC = () => {
+    const [classes, setClasses] = useState<MonitoredClass[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
 
-    const loadDepartmentRegistryData = async () => {
+    const loadProgramRegistryData = async () => {
         try {
             setIsLoading(true);
             const activeUserStr = localStorage.getItem("user");
             if (!activeUserStr) return;
             const user = JSON.parse(activeUserStr);
 
-            const res = await fetch(`${API_ENDPOINTS.DEPARTMENT_CHAIR_MONITOR}?user_id=${user.id}`);
+            const res = await fetch(`${API_ENDPOINTS.CHAIRPERSON_MONITOR}?user_id=${user.id}`);
             const result = await res.json();
             if (result.status === "success") {
                 setClasses(result.data || []);
             }
         } catch (err) {
-            console.error("Failed synchronization reading department monitors:", err);
+            console.error("Network synchronization dropout reading program monitors:", err);
         } finally {
             setIsLoading(false);
         }
@@ -42,7 +41,7 @@ const DepartmentHeadDashboard: React.FC = () => {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            loadDepartmentRegistryData();
+            loadProgramRegistryData();
         }, 500); // Delay to ensure user data is loaded
 
         return () => clearTimeout(timer);
@@ -72,7 +71,7 @@ const DepartmentHeadDashboard: React.FC = () => {
                 scheduleId={selectedScheduleId} 
                 onBack={() => {
                     setSelectedScheduleId(null);
-                    loadDepartmentRegistryData();
+                    loadProgramRegistryData(); // Re-fetch on return
                 }} 
             />
         );
@@ -82,11 +81,11 @@ const DepartmentHeadDashboard: React.FC = () => {
         <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5 select-none">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900 font-montserrat tracking-tight">Department Head Compliance Matrix</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Audit real-time continuous quality improvement submission metrics across all department programs.</p>
+                    <h2 className="text-xl font-bold text-slate-900 font-montserrat tracking-tight">CQI Program Tracking Matrix</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">Audit real-time continuous quality improvement submission metrics across assigned tracks.</p>
                 </div>
                 <button
-                    onClick={loadDepartmentRegistryData}
+                    onClick={loadProgramRegistryData}
                     disabled={isLoading}
                     className="flex items-center gap-1.5 self-start bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50"
                 >
@@ -102,7 +101,8 @@ const DepartmentHeadDashboard: React.FC = () => {
             ) : classes.length === 0 ? (
                 <div className="w-full py-16 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center select-none bg-slate-50/50">
                     <ShieldAlert className="w-10 h-10 text-slate-300 mb-2" />
-                    <h4 className="text-sm font-bold text-slate-700">No active departmental class loads compiled.</h4>
+                    <h4 className="text-sm font-bold text-slate-700">No active class offerings compiled.</h4>
+                    <p className="text-xs text-slate-400 max-w-sm mt-1">Schedules matching your specialized degree track programs code list have not been registered yet.</p>
                 </div>
             ) : (
                 <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
@@ -110,27 +110,29 @@ const DepartmentHeadDashboard: React.FC = () => {
                         <table className="w-full border-collapse text-left">
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100 select-none">
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Program / Track</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Course Info</th>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Class Info</th>
                                     <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Faculty</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Midterms</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Finals</th>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Midterm CQI</th>
+                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Finals CQI</th>
                                     <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-600">
                                 {classes.map((cls) => (
                                     <tr key={cls.id} className="hover:bg-slate-50/30 transition-colors group">
-                                        <td className="p-4">
-                                            <span className="text-xs bg-primary/10 text-primary font-black px-2 py-0.5 rounded font-montserrat">{cls.program_code}</span>
-                                        </td>
-                                        <td className="p-4 max-w-50">
-                                            <div className="font-bold text-slate-900 truncate">{cls.course_name}</div>
-                                            <div className="text-xs text-slate-400 font-medium mt-0.5">{cls.course_code} • Sec {cls.section}</div>
+                                        <td className="p-4 max-w-60">
+                                            <div className="font-bold text-slate-900 group-hover:text-primary transition-colors font-montserrat truncate">
+                                                {cls.course_name}
+                                            </div>
+                                            <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
+                                                <span className="font-mono text-slate-600 font-bold bg-slate-100 px-1 py-0.5 rounded text-[10px]">{cls.course_code}</span>
+                                                <span>•</span>
+                                                <span>Sec {cls.section}</span>
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <div className="text-slate-800 font-bold text-xs">{cls.faculty_name}</div>
-                                            <div className="text-[11px] text-slate-400 font-medium font-mono truncate max-w-37.5">{cls.faculty_email}</div>
+                                            <div className="text-[11px] text-slate-400 font-medium font-mono">{cls.faculty_email || "no-email@cvsu.edu.ph"}</div>
                                         </td>
                                         <td className="p-4 text-center">{renderStatusBadge(cls.midterms_status)}</td>
                                         <td className="p-4 text-center">{renderStatusBadge(cls.finals_status)}</td>
@@ -153,4 +155,4 @@ const DepartmentHeadDashboard: React.FC = () => {
     );
 };
 
-export default DepartmentHeadDashboard;
+export default ProgramHeadDashboard;

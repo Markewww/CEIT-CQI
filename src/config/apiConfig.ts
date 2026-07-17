@@ -41,5 +41,8 @@ export const API_ENDPOINTS = {
 
     // DEPARTMENT CHAIR ENDPOINTS
     DEPARTMENT_CHAIR_MONITOR: `${APIconfig}/department_chair/fetch_schedules.php`,
+
+    // DEAN ENDPOINTS
+    DEAN_MONITOR: `${APIconfig}/dean/fetch_college_schedules.php`,
     
 }

@@ -196,9 +196,9 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ onClose, onUserCreate
                                 className="w-full text-sm font-medium text-slate-800 bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-primary transition-colors cursor-pointer"
                             >
                                 <option value="Faculty">Faculty</option>
-                                <option value="Chairperson">Chairperson</option>
-                                <option value="Department Head">Department Head</option>
-                                <option value="Dean">Dean</option>
+                                <option value="Program Head">Program Head</option>
+                                <option value="Department Chairperson">Department Chairperson</option>
+                                <option value="College Dean">College Dean</option>
                                 <option value="Admin">Admin</option>
                             </select>
                         </div>
