@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Printer, Loader2 } from "lucide-react";
 import cvsuHeaderAsset from "@/assets/cvsu-header-bagong-pilipinas-HD.png";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface PrintPeriodSummaryProps {
     scheduleId: string;
@@ -48,16 +48,16 @@ const PrintPeriodSummary: React.FC<PrintPeriodSummaryProps> = ({ scheduleId, per
             }
 
             // 2. Fetch records sequentially to avoid parallel query race condition lockouts [INDEX: 0.1.8]
-            const resIlo = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=ilo_summary`);
+            const resIlo = await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}?schedule_id=${scheduleId}&period=${period}&action=ilo_summary`);
             const dataIlo = await resIlo.json();
 
-            const resCo = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
+            const resCo = await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
             const dataCo = await resCo.json();
 
-            const resAction = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
+            const resAction = await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
             const dataAction = await resAction.json();
 
-            const resSig = await fetch(`${APIconfig}/faculty/get_signatories.php?schedule_id=${scheduleId}&_t=${Date.now()}`); // ◄ FORCE FRESH FETCH
+            const resSig = await fetch(`${API_ENDPOINTS.FACULTY_GET_SIGNATORIES}?schedule_id=${scheduleId}&_t=${Date.now()}`); // ◄ FORCE FRESH FETCH
             const dataSig = await resSig.json();
 
             const iloData: IloRow[] = dataIlo.summary_data || [];

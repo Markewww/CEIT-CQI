@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface DepartmentDropdownData {
     id: number;
@@ -30,7 +30,7 @@ const ProgramCreateModal: React.FC<ProgramCreateModalProps> = ({ onClose, onProg
     useEffect(() => {
         const loadDepartments = async () => {
             try {
-                const response = await fetch(`${APIconfig}/admin/departments.php`);
+                const response = await fetch(API_ENDPOINTS.ADMIN_DEPARTMENTS);
                 const result = await response.json();
                 if (result.status === "success") {
                     setDepartments(result.data);
@@ -65,7 +65,7 @@ const ProgramCreateModal: React.FC<ProgramCreateModalProps> = ({ onClose, onProg
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/create_program.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_CREATE_PROGRAM, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -86,6 +86,8 @@ const ProgramCreateModal: React.FC<ProgramCreateModalProps> = ({ onClose, onProg
                 setMessage({ type: 'error', text: result.message || "Failed to create curriculum profile." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error creating program:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

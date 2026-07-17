@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface DepartmentData {
     id: number;
@@ -25,12 +25,15 @@ const DepartmentEditModal: React.FC<DepartmentEditModalProps> = ({ department, o
     // Populate the form fields when the department prop opens or updates
     useEffect(() => {
         if (department) {
-            setFormData({
-                id: department.id,
-                code: department.code || "",
-                name: department.name || ""
-            });
+            const timerGuard = setTimeout(() => {
+                setFormData({
+                    id: department.id,
+                    code: department.code || "",
+                    name: department.name || ""
+                });
             setMessage(null);
+        }, 0);
+            return () => clearTimeout(timerGuard);
         }
     }, [department]);
 
@@ -53,7 +56,7 @@ const DepartmentEditModal: React.FC<DepartmentEditModalProps> = ({ department, o
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/update_department.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_UPDATE_DEPARTMENT, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
@@ -70,6 +73,8 @@ const DepartmentEditModal: React.FC<DepartmentEditModalProps> = ({ department, o
                 setMessage({ type: 'error', text: result.message || "Failed to update department records." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error updating department:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface CoSummaryRow {
     co_name: string;
@@ -22,7 +22,7 @@ const CoSummaryDashboard: React.FC<CoSummaryDashboardProps> = ({ scheduleId, per
         try {
             setIsLoading(true);
             // Appends action=co_summary to request the compiled group calculations [INDEX: 0.1.5]
-            const res = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}?schedule_id=${scheduleId}&period=${period}&action=co_summary`);
             const out = await res.json();
             if (out.status === "success") {
                 setSummaryRows(out.summary_data || []);
@@ -35,7 +35,11 @@ const CoSummaryDashboard: React.FC<CoSummaryDashboardProps> = ({ scheduleId, per
     }, [scheduleId, period]);
 
     useEffect(() => {
-        loadCoSummary();
+        const timer = setTimeout(() => {
+            loadCoSummary();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [loadCoSummary]);
 
     if (isLoading) return <div className="p-8 text-center text-xs font-bold text-slate-400 font-montserrat animate-pulse">Aggregating mean course outcome ratios...</div>;

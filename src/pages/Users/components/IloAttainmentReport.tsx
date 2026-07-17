@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle, AlertCircle } from "lucide-react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface IloItemRow {
     ilo_name: string;
@@ -26,7 +26,7 @@ const IloAttainmentReport: React.FC<IloAttainmentReportProps> = ({ scheduleId, p
     const loadIloReportMetrics = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`${APIconfig}/faculty/ilo_analysis.php?schedule_id=${scheduleId}&period=${period}`);
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_ILO_ANALYSIS}?schedule_id=${scheduleId}&period=${period}`);
             const out = await res.json();
             if (out.status === "success") {
                 setReport(out.report_data || []);
@@ -39,14 +39,18 @@ const IloAttainmentReport: React.FC<IloAttainmentReportProps> = ({ scheduleId, p
     }, [scheduleId, period]);
 
     useEffect(() => {
-        loadIloReportMetrics();
+        const timer = setTimeout(() => {
+            loadIloReportMetrics();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [loadIloReportMetrics]);
 
     // Triggers an update to the database automatically when focus leaves a cell
     const handleCellBlur = async (itemNumber: number, field: "ilo_name" | "action_plan", updatedValue: string) => {
         setSyncingRow(itemNumber);
         try {
-            await fetch(`${APIconfig}/faculty/ilo_analysis.php`, {
+            await fetch(`${API_ENDPOINTS.FACULTY_ILO_ANALYSIS}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

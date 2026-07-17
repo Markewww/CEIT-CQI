@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface ScheduleData {
     id: number;
@@ -36,7 +36,7 @@ const FacultySchedules: React.FC<FacultySchedulesProps> = ({ employeeId, onClass
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch(`${APIconfig}/faculty/my_schedules.php?employee_id=${encodeURIComponent(employeeId)}`);
+            const response = await fetch(`${API_ENDPOINTS.FACULTY_MY_SCHEDULES}?employee_id=${encodeURIComponent(employeeId)}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code status: ${response.status}`);
@@ -50,15 +50,21 @@ const FacultySchedules: React.FC<FacultySchedulesProps> = ({ employeeId, onClass
             } else {
                 setError(result.message || "Failed to extract your scheduling metrics.");
             }
-        } catch (err: any) {
-            setError(err.message || "Connection failure to server endpoints.");
+        } catch (err) {
+            const error = err as Error;
+            console.error("Error fetching faculty schedules:", err);
+            setError(error.message || "Connection failure to server endpoints.");
         } finally {
             setIsLoading(false);
         }
     }, [employeeId]);
 
     useEffect(() => {
-        fetchMyLoads();
+        const timer = setTimeout(() => {
+            fetchMyLoads();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [fetchMyLoads]);
 
     const filteredLoads = myClasses.filter(c => 

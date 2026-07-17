@@ -1,4 +1,4 @@
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 import React, { useState } from "react";
 
 interface CourseCreateModalProps {
@@ -33,7 +33,7 @@ const CourseCreateModal: React.FC<CourseCreateModalProps> = ({ onClose, onCourse
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/create_course.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_CREATE_COURSE, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -53,6 +53,7 @@ const CourseCreateModal: React.FC<CourseCreateModalProps> = ({ onClose, onCourse
                 setMessage({ type: 'error', text: result.message || "Failed to create master course entry." });
             }
         } catch (err) {
+            console.error("Error creating course:", err);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

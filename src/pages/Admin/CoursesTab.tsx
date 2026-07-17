@@ -4,7 +4,7 @@ import CoursesTable from "./components/CoursesTable";
 // IMPORT MODALS: Bring in both creation and modification modules cleanly
 import CourseCreateModal from "./components/CourseCreateModal";
 import CourseEditModal from "./components/CourseEditModal";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface CourseData {
     id: number;
@@ -26,7 +26,7 @@ const CoursesTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch(`${APIconfig}/admin/courses.php`);
+            const response = await fetch(API_ENDPOINTS.ADMIN_COURSES);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);
@@ -38,8 +38,9 @@ const CoursesTab: React.FC = () => {
             } else {
                 setError(result.message || "Failed to load master course records.");
             }
-        } catch (err: any) {
-            setError(err.message || "Unable to reach database connection endpoint.");
+        } catch (err) {
+            const errorInstance = err as Error;
+            setError(errorInstance.message || "Unable to reach database connection endpoint.");
         } finally {
             setIsLoading(false);
         }
@@ -47,7 +48,12 @@ const CoursesTab: React.FC = () => {
 
     // Load master courses upon initial component assembly
     useEffect(() => {
-        fetchCourses();
+        const timerGuard = setTimeout(() => {
+            fetchCourses();
+        }, 0);
+
+        return () => clearTimeout(timerGuard);
+        // fetchCourses();
     }, [fetchCourses]);
 
     // Handle modification trigger when configuration button is clicked on any row

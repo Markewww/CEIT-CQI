@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import UserEditModal from "./UserEditModal";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface SystemUser {
     id: number;
@@ -61,7 +61,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
         setIsSubmitting(true);
         setActionError(null);
         try {
-            const response = await fetch(`${APIconfig}/admin/approve_user.php`, {
+            const response = await fetch(`${API_ENDPOINTS.ADMIN_APPROVE_USER}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_id: userToApprove.id })
@@ -74,6 +74,8 @@ const UsersTable: React.FC<UsersTableProps> = ({ users, isLoading, error, onUser
                 setActionError(result.message || "Failed to update user profile registration state.");
             }
         } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "Unknown error occurred.";
+            console.error("Error approving user:", errorMessage);
             setActionError("Network endpoint connection failure.");
         } finally {
             setIsSubmitting(false);

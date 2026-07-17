@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface OverallRow {
     co_name: string;
@@ -20,7 +20,7 @@ const OverallSummaryCanvas: React.FC<OverallSummaryCanvasProps> = ({ scheduleId 
     const loadOverallSummary = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`${APIconfig}/faculty/overall_summary.php?schedule_id=${scheduleId}`);
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_OVERALL_SUMMARY}?schedule_id=${scheduleId}`);
             const out = await res.json();
             if (out.status === "success") {
                 setRows(out.summary_data || []);
@@ -33,7 +33,11 @@ const OverallSummaryCanvas: React.FC<OverallSummaryCanvasProps> = ({ scheduleId 
     }, [scheduleId]);
 
     useEffect(() => {
-        loadOverallSummary();
+        const timer = setTimeout(() => {
+            loadOverallSummary();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [loadOverallSummary]);
 
     if (isLoading) return <div className="p-8 text-center text-xs font-bold text-slate-400 font-montserrat animate-pulse">Aggregating cross-period compliance data metrics...</div>;

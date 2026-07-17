@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UsersTable from "./components/UsersTable";
 import UserCreateModal from "./components/UserCreateModal";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface SystemUser {
     id: number;
@@ -33,7 +33,7 @@ const AccountsTab: React.FC = () => {
     const fetchAccounts = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`${APIconfig}/admin/users.php`);
+            const response = await fetch(API_ENDPOINTS.ADMIN_USERS);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);
@@ -45,15 +45,20 @@ const AccountsTab: React.FC = () => {
             } else {
                 setError(result.message || "Failed to load database registries.");
             }
-        } catch (err: any) {
-            setError(err.message || "Unable to reach database connection link.");
+        } catch (err) {
+            const errorInstance = err as Error;
+            setError(errorInstance.message || "Unable to reach database connection link.");
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchAccounts();
+        const timerGuard = setTimeout(() => {
+            fetchAccounts();
+        }, 0);
+
+        return () => clearTimeout(timerGuard);
     }, []);
 
     return (

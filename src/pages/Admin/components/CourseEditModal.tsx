@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface CourseData {
     id: number;
@@ -25,12 +25,16 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({ course, onClose, onCo
     // Sync form inputs with the selected course details when the modal opens
     useEffect(() => {
         if (course) {
-            setFormData({
-                id: course.id,
-                code: course.code || "",
-                description: course.description || ""
-            });
-            setMessage(null);
+            const timerGuard = setTimeout(() => {
+                setFormData({
+                    id: course.id,
+                    code: course.code || "",
+                    description: course.description || ""
+                });
+                setMessage(null);
+            }, 0);
+
+            return () => clearTimeout(timerGuard);
         }
     }, [course]);
 
@@ -53,7 +57,7 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({ course, onClose, onCo
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/update_course.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_UPDATE_COURSE, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -74,6 +78,8 @@ const CourseEditModal: React.FC<CourseEditModalProps> = ({ course, onClose, onCo
                 setMessage({ type: 'error', text: result.message || "Failed to update course registry entries." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error updating course:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

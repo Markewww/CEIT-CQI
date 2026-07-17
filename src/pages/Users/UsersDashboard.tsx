@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header"; 
-// Import your fresh faculty subcomponent cleanly
 import FacultySchedules from "./components/FacultySchedules";
-// 1. IMPORT CLASSRoom WORKSPACE: Load your sub-workspace profile grid canvas
 import ClassWorkspace from "./components/ClassWorkspace";
+
+// IMPORT USER ROLE-BASED COMPONENTS HERE
+import ChairpersonDashboard from "./components/ChairpersonDashboard"; // For Chairpersons
+import DepartmentHeadDashboard from "./components/DepartmentHeadDashboard"; // For Department Heads
 
 const UsersDashboard: React.FC = () => {
     const { user } = useAuth();
@@ -86,6 +88,36 @@ const UsersDashboard: React.FC = () => {
                     >
                         My Class Load Schedules
                     </button>
+                    
+                    {/* 2. CHAIRPERSON SWITCH GATE LINK: Conditionally inject tracking tools tab [INDEX: 0.1.92] */}
+                    {(userRole === "Chairperson") && (
+                        <button
+                            type="button"
+                            onClick={() => { setActiveSubTab("ChairpersonTools"); setSelectedClassId(null); }} // Reset selection view on tab click [INDEX: 1]
+                            className={`text-xs font-bold font-montserrat uppercase px-4 py-2 border-b-2 transition-all cursor-pointer ${
+                                activeSubTab === "ChairpersonTools"
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-slate-400 hover:text-slate-700"
+                            }`}
+                            >
+                            Chairperson Tracking Matrix
+                            </button>   
+                    )}
+
+                    {/* 3. DEPARTMENT HEAD SWITCH GATE LINK: Conditionally inject department head tab [INDEX: 0.1.93] */}
+                    {(userRole === "Department Head") && (
+                        <button
+                            type="button"
+                            onClick={() => { setActiveSubTab("DepartmentHeadTools"); setSelectedClassId(null); }} // Reset selection view on tab click [INDEX: 1]
+                            className={`text-xs font-bold font-montserrat uppercase px-4 py-2 border-b-2 transition-all cursor-pointer ${
+                                activeSubTab === "DepartmentHeadTools"
+                                    ? "border-primary text-primary"
+                                    : "border-transparent text-slate-400 hover:text-slate-700"
+                            }`}
+                        >
+                            Department Head Monitoring
+                        </button>
+                    )}
 
                     {/* Upcoming structural conditional check rendering nodes will be attached here */}
                     {/* e.g., userRole === 'Department Chair' && <button>... Chair Tools ...</button> */}
@@ -109,6 +141,13 @@ const UsersDashboard: React.FC = () => {
                     )}
 
                     {/* Placeholder areas for other role scopes will expand right here later */}
+                    {activeSubTab === "ChairpersonTools" && (
+                        <ChairpersonDashboard 
+                        />
+                    )}
+                    {activeSubTab === "DepartmentHeadTools" && (
+                        <DepartmentHeadDashboard />
+                    )}
                 </div>
 
             </main>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface SummaryRow {
     co_name: string;
@@ -23,7 +23,7 @@ const IloSummaryDashboard: React.FC<IloSummaryDashboardProps> = ({ scheduleId, p
     const loadIloSummary = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}`);
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}?schedule_id=${scheduleId}&period=${period}`);
             const out = await res.json();
             if (out.status === "success") {
                 setSummaryRows(out.summary_data || []);
@@ -36,7 +36,11 @@ const IloSummaryDashboard: React.FC<IloSummaryDashboardProps> = ({ scheduleId, p
     }, [scheduleId, period]);
 
     useEffect(() => {
-        loadIloSummary();
+        const timer = setTimeout(() => {
+            loadIloSummary();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [loadIloSummary]);
 
     const handleCoInputChange = (iloName: string, inputValue: string) => {
@@ -50,7 +54,7 @@ const IloSummaryDashboard: React.FC<IloSummaryDashboardProps> = ({ scheduleId, p
     const handleCoBlur = async (iloName: string, finalValue: string) => {
         setSyncingKey(iloName);
         try {
-            await fetch(`${APIconfig}/faculty/period_summary.php`, {
+            await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

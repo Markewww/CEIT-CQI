@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface ActionSummaryRow {
     ilo_name: string;
@@ -21,7 +21,7 @@ const ActionPlanSummaryDashboard: React.FC<ActionPlanSummaryProps> = ({ schedule
     const loadActionSummary = useCallback(async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`${APIconfig}/faculty/period_summary.php?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}?schedule_id=${scheduleId}&period=${period}&action=action_summary`);
             const out = await res.json();
             if (out.status === "success") {
                 setSummaryRows(out.summary_data || []);
@@ -34,7 +34,11 @@ const ActionPlanSummaryDashboard: React.FC<ActionPlanSummaryProps> = ({ schedule
     }, [scheduleId, period]);
 
     useEffect(() => {
-        loadActionSummary();
+        const timer = setTimeout(() => {
+            loadActionSummary();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [loadActionSummary]);
 
     const handleLocalTextChange = (iloName: string, field: "proposed_timeline" | "comment", value: string) => {
@@ -46,7 +50,7 @@ const ActionPlanSummaryDashboard: React.FC<ActionPlanSummaryProps> = ({ schedule
     const handleCellBlur = async (iloName: string, field: "proposed_timeline" | "comment", value: string) => {
         setSyncingKey(iloName);
         try {
-            await fetch(`${APIconfig}/faculty/period_summary.php`, {
+            await fetch(`${API_ENDPOINTS.FACULTY_PERIOD_SUMMARY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

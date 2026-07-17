@@ -52,11 +52,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onBackToLogin, onSubmitSucc
     useEffect(() => {
         const deptId = getDepartmentIdByCode(department);
         if (deptId === 0) {
-            setTimeout(() => {
+            const timerGuard = setTimeout(() => {
                 setPrograms([]);
                 setProgramId("0");
             }, 0);
-            return;
+            return () => clearTimeout(timerGuard);
         }
 
         const fetchPrograms = async () => {

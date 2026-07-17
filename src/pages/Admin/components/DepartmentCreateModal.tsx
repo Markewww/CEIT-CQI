@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface DepartmentCreateModalProps {
     onClose: () => void;
@@ -33,7 +33,7 @@ const DepartmentCreateModal: React.FC<DepartmentCreateModalProps> = ({ onClose, 
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/create_department.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_CREATE_DEPARTMENT, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
@@ -50,6 +50,8 @@ const DepartmentCreateModal: React.FC<DepartmentCreateModalProps> = ({ onClose, 
                 setMessage({ type: 'error', text: result.message || "Failed to create department entry." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error creating department:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

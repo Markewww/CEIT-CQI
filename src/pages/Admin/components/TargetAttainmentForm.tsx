@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface TargetAttainmentFormProps {
     activeDept: string;
@@ -13,14 +13,17 @@ const TargetAttainmentForm: React.FC<TargetAttainmentFormProps> = ({ activeDept,
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     useEffect(() => {
-        setInputValue(attainment.toString());
+        const timer = setTimeout(() => {
+            setInputValue(attainment.toString());
+        }, 0);
+        return () => clearTimeout(timer);
     }, [attainment]);
 
     useEffect(() => {
         const fetchThreshold = async () => {
             try {
                 // Hits your single PHP endpoint file directly
-                const response = await fetch(`${APIconfig}/admin/attainment.php?department_code=${activeDept}`);
+                const response = await fetch(`${API_ENDPOINTS.ADMIN_ATTAINMENT}?department_code=${activeDept}`);
                 const data = await response.json();
                 if (data.status === "success") {
                     setAttainment(data.value);
@@ -43,7 +46,7 @@ const TargetAttainmentForm: React.FC<TargetAttainmentFormProps> = ({ activeDept,
         if (message) setMessage(null);
 
         if (rawValue === "") return;
-        let numericValue = Number(rawValue);
+        const numericValue = Number(rawValue);
         if (!isNaN(numericValue)) {
             setAttainment(Math.max(0, Math.min(100, numericValue)));
         }
@@ -59,7 +62,7 @@ const TargetAttainmentForm: React.FC<TargetAttainmentFormProps> = ({ activeDept,
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/attainment.php`, {
+            const response = await fetch(`${API_ENDPOINTS.ADMIN_ATTAINMENT}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -75,6 +78,8 @@ const TargetAttainmentForm: React.FC<TargetAttainmentFormProps> = ({ activeDept,
                 setMessage({ type: 'error', text: data.message || 'Failed to save changes.' });
             }
         } catch (error) {
+            const errorInstance = error as Error;
+            console.error("Error saving attainment:", errorInstance);
             setMessage({ type: 'error', text: 'Server connection failure.' });
         } finally {
             setIsSaving(false);

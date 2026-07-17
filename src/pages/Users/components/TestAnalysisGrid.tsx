@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface Student {
     student_id: string;
@@ -20,7 +20,7 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
 
     const loadAnalysisMatrix = useCallback(async () => {
         try {
-            const res = await fetch(`${APIconfig}/faculty/test_analysis.php?schedule_id=${scheduleId}&period=${period}`);
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_TEST_ANALYSIS}?schedule_id=${scheduleId}&period=${period}`);
             const out = await res.json();
             if (out.status === "success") {
                 setTotalItems(out.total_items);
@@ -32,7 +32,11 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
     }, [scheduleId, period]);
 
     useEffect(() => {
-        loadAnalysisMatrix();
+        const timer = setTimeout(() => {
+            loadAnalysisMatrix();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
     }, [loadAnalysisMatrix]);
 
     const handleConfigSubmit = async (e: React.FormEvent) => {
@@ -44,7 +48,7 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
         setIsSaving(true);
         setAlertMessage(null);
         try {
-            const res = await fetch(`${APIconfig}/faculty/test_analysis.php`, {
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_TEST_ANALYSIS}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ schedule_id: scheduleId, period, total_items: totalItems })
@@ -79,7 +83,7 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
         setIsSaving(true);
 
         try {
-            const res = await fetch(`${APIconfig}/faculty/test_analysis.php`, {
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_TEST_ANALYSIS}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

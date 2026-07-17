@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface SystemUser {
     id: number;
@@ -64,7 +64,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
         }
         try {
             setIsLoadingPrograms(true);
-            const res = await fetch(`${APIconfig}/helpers/get_cascading_options.php?department_id=${deptId}`);
+            const res = await fetch(`${API_ENDPOINTS.CASCADING_OPTIONS}?department_id=${deptId}`);
             const result = await res.json();
             if (result.status === "success") {
                 setPrograms(result.programs || []);
@@ -79,26 +79,27 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
     // 3. EFFECT BLOCK A: Populate initial user fields when modal target changes
     useEffect(() => {
         if (user) {
-            setFormData({
-                id: user.id,
-                employee_id: user.employee_id,
-                first_name: user.first_name,
-                middle_name: user.middle_name,
-                last_name: user.last_name,
-                suffix: user.suffix,
-                email: user.email || "",
-                contact_number: user.contact_number,
-                password: "", 
-                department_id: user.department_id,
-                program_id: user.program_id ? Number(user.program_id) : null, // Numerical casting
-                role: user.role,
-                status: user.status,
-                is_active: user.is_active
-            });
-            setMessage(null);
-            
-            // Trigger options fetch
-            fetchProgramsForDepartment(user.department_id);
+            const timer = setTimeout(() => {
+                setFormData({
+                    id: user.id,
+                    employee_id: user.employee_id,
+                    first_name: user.first_name,
+                    middle_name: user.middle_name,
+                    last_name: user.last_name,
+                    suffix: user.suffix,
+                    email: user.email || "",
+                    contact_number: user.contact_number,
+                    password: "", 
+                    department_id: user.department_id,
+                    program_id: user.program_id ? Number(user.program_id) : null, // Numerical casting
+                    role: user.role,
+                    status: user.status,
+                    is_active: user.is_active,
+                });
+                setMessage(null);
+                fetchProgramsForDepartment(user.department_id);
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [user, fetchProgramsForDepartment]);
     // Place this inside UserEditModal.tsx right before your return statement:
@@ -108,8 +109,12 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
             const programExists = programs.some(p => p.id === targetProgramId);
 
             if (programExists) {
-                setFormData(prev => ({ ...prev, program_id: targetProgramId }));
+                const timerGuard = setTimeout(() => {
+                    setFormData(prev => ({ ...prev, program_id: targetProgramId }));
+                }, 0);
+                return () => clearTimeout(timerGuard);
             }
+
         }
     }, [programs, user]); // ◄ Fires instantly the moment the database programs arrive!
 
@@ -143,7 +148,7 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
         setIsSubmitting(true);
         setMessage(null);
         try {
-            const response = await fetch(`${APIconfig}/admin/update_user.php`, {
+            const response = await fetch(`${API_ENDPOINTS.ADMIN_UPDATE_USER}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
@@ -159,6 +164,8 @@ const UserEditModal: React.FC<UserEditModalProps> = ({ user, onClose, onUserUpda
                 setMessage({ type: 'error', text: result.message || "Failed to update profile changes." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error during user update:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

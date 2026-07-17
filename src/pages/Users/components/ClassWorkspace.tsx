@@ -5,7 +5,7 @@ import TestAnalysisGrid from "./TestAnalysisGrid";
 import IloAttainmentReport from "./IloAttainmentReport"; 
 import PeriodSummaryContainer from "./PeriodSummaryContainer";
 import OverallSummaryCanvas from "./OverallSummaryCanvas";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface ClassInfo {
     schedule_id: string;
@@ -28,6 +28,10 @@ interface ClassWorkspaceProps {
     onBack: () => void;
 }
 
+interface ExcelRowData {
+    [index: number]: string | number | undefined;
+}
+
 const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) => {
     const [info, setClassInfo] = useState<ClassInfo | null>(null);
     const [roster, setRoster] = useState<Student[]>([]);
@@ -47,7 +51,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
     const loadClassDetails = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await fetch(`${APIconfig}/faculty/class_details.php?schedule_id=${encodeURIComponent(scheduleId)}`);
+            const response = await fetch(`${API_ENDPOINTS.FACULTY_CLASS_DETAILS}?schedule_id=${encodeURIComponent(scheduleId)}`);
             const result = await response.json();
             if (result.status === "success") {
                 setClassInfo(result.class_info);
@@ -63,12 +67,17 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
     }, [scheduleId]);
 
     useEffect(() => { 
-        loadClassDetails(); 
+        const timer = setTimeout(() => {
+            loadClassDetails();
+        }, 1000); // Delay of 1 second
+
+        return () => clearTimeout(timer); // Cleanup the timer on unmount
+        // loadClassDetails(); 
     }, [loadClassDetails]);
 
-    const sendBatchToDatabase = async (batch: any[]) => {
+    const sendBatchToDatabase = async (batch: Student[]) => {
         try {
-            const res = await fetch(`${APIconfig}/faculty/manage_roster.php`, {
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_MANAGE_ROSTER}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ is_batch: true, schedule_id: scheduleId, students: batch })
@@ -95,7 +104,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
                     const data = new Uint8Array(evt.target?.result as ArrayBuffer);
                     const workbook = XLSX.read(data, { type: "array" });
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    const rawRows: ExcelRowData[] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
                     const studentsBatch = rawRows.slice(1).map(row => ({
                         student_id: row[2]?.toString().trim() || "",
@@ -134,7 +143,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
             return;
         }
         try {
-            const res = await fetch(`${APIconfig}/faculty/manage_roster.php`, {
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_MANAGE_ROSTER}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ schedule_id: scheduleId, student_id: manualForm.student_id.trim(), full_name: manualForm.full_name.trim() })
@@ -157,7 +166,7 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
         const confirmDelete = window.confirm(`Are you sure you want to remove ${studentName} (${studentId}) from this class roster?`);
         if (!confirmDelete) return;
         try {
-            const res = await fetch(`${APIconfig}/faculty/delete_student.php`, {
+            const res = await fetch(`${API_ENDPOINTS.FACULTY_DELETE_STUDENT}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ schedule_id: scheduleId, student_id: studentId })
@@ -249,11 +258,11 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
                     { id: "midterms", name: "Midterm Period", icon: <BarChart3 className="w-3.5 h-3.5" /> },
                     { id: "finals", name: "Final Period", icon: <BarChart3 className="w-3.5 h-3.5" /> },
                     { id: "summary", name: "Overall Summary", icon: <Target className="w-3.5 h-3.5" /> }
-                ].map(tab => (
+                ].map((tab: { id: string; name: string; icon: React.ReactNode }) => (
                     <button
                         key={tab.id}
                         type="button"
-                        onClick={() => { setActiveMainTab(tab.id as any); setActiveSubTab("record"); }}
+                        onClick={() => { setActiveMainTab(tab.id as "roster" | "midterms" | "finals" | "summary"); setActiveSubTab("record"); }}
                         className={`text-xs font-bold font-montserrat uppercase px-4 py-2 border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                             activeMainTab === tab.id ? "border-primary text-primary" : "border-transparent text-slate-400 hover:text-slate-700"
                         }`}
@@ -282,11 +291,11 @@ const ClassWorkspace: React.FC<ClassWorkspaceProps> = ({ scheduleId, onBack }) =
                             { id: "record", name: "Class Record", icon: <FileText className="w-3 h-3" /> },
                             { id: "lo", name: "Learning Outcomes", icon: <Target className="w-3 h-3" /> },
                             { id: "summary", name: "Period Summary", icon: <BarChart3 className="w-3 h-3" /> }
-                        ].map(sub => (
+                        ].map((sub: { id: string; name: string; icon: React.ReactNode }) => (
                             <button
                                 key={sub.id}
                                 type="button"
-                                onClick={() => setActiveSubTab(sub.id as any)}
+                                onClick={() => setActiveSubTab(sub.id as "record" | "lo" | "summary")}
                                 className={`text-[10px] font-bold font-montserrat uppercase px-3 py-1.5 rounded-lg border transition-all cursor-pointer flex items-center gap-1 ${
                                     activeSubTab === sub.id
                                         ? "bg-white border-slate-300 text-primary shadow-sm font-black"

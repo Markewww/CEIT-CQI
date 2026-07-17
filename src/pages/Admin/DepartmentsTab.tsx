@@ -3,7 +3,7 @@ import DepartmentsTable from "./components/DepartmentsTable";
 import DepartmentEditModal from "./components/DepartmentEditModal";
 // 1. IMPORT MODAL: Load the creation overlay view component
 import DepartmentCreateModal from "./components/DepartmentCreateModal";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface DepartmentData {
     id: number;
@@ -25,7 +25,7 @@ const DepartmentsTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch(`${APIconfig}/admin/departments.php`);
+            const response = await fetch(API_ENDPOINTS.ADMIN_DEPARTMENTS);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);
@@ -37,15 +37,21 @@ const DepartmentsTab: React.FC = () => {
             } else {
                 setError(result.message || "Failed to load database department records.");
             }
-        } catch (err: any) {
-            setError(err.message || "Unable to reach database connection link.");
+        } catch (err) {
+            const errorInstance = err as Error;
+            setError(errorInstance.message || "Unable to reach database connection link.");
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchDepartments();
+        const timerGuard = setTimeout(() => {
+            fetchDepartments();
+        }, 0);
+
+        return () => clearTimeout(timerGuard);
+        // fetchDepartments();
     }, [fetchDepartments]);
 
     const handleEditClick = (dept: DepartmentData) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface DepartmentDropdownData {
     id: number;
@@ -40,7 +40,7 @@ const ProgramEditModal: React.FC<ProgramEditModalProps> = ({ program, onClose, o
     useEffect(() => {
         const loadDepartments = async () => {
             try {
-                const response = await fetch(`${APIconfig}/admin/departments.php`);
+                const response = await fetch(API_ENDPOINTS.ADMIN_DEPARTMENTS);
                 const result = await response.json();
                 if (result.status === "success") {
                     setDepartments(result.data);
@@ -57,13 +57,17 @@ const ProgramEditModal: React.FC<ProgramEditModalProps> = ({ program, onClose, o
     // Populate or sync form fields when the program prop loads
     useEffect(() => {
         if (program) {
-            setFormData({
-                id: program.id,
-                code: program.code || "",
-                name: program.name || "",
-                department_id: program.department_id ? program.department_id.toString() : ""
-            });
+            const timerGuard = setTimeout(() => {
+                setFormData({
+                    id: program.id,
+                    code: program.code || "",
+                    name: program.name || "",
+                    department_id: program.department_id ? program.department_id.toString() : ""
+                });
             setMessage(null);
+        }, 0);
+
+            return () => clearTimeout(timerGuard);
         }
     }, [program]);
 
@@ -86,7 +90,7 @@ const ProgramEditModal: React.FC<ProgramEditModalProps> = ({ program, onClose, o
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/update_program.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_UPDATE_PROGRAM, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -108,6 +112,8 @@ const ProgramEditModal: React.FC<ProgramEditModalProps> = ({ program, onClose, o
                 setMessage({ type: 'error', text: result.message || "Failed to update curriculum profile." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error updating program:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

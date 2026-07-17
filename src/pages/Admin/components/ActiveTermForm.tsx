@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig"; // Import the API configuration
+import { API_ENDPOINTS } from "@/config/apiConfig"; // Import the API configuration
 
 interface ActiveTermFormProps {
     userName: string;
@@ -15,7 +15,7 @@ const ActiveTermForm: React.FC<ActiveTermFormProps> = ({ userName }) => {
     useEffect(() => {
         const fetchActiveTerm = async () => {
             try {
-                const response = await fetch(`${APIconfig}/admin/active_term.php`);
+                const response = await fetch(API_ENDPOINTS.ADMIN_ACTIVE_TERM);
                 const data = await response.json();
                 if (data.status === "success" && data.data) {
                     setAcademicYear(data.data.academic_year || "");
@@ -38,7 +38,7 @@ const ActiveTermForm: React.FC<ActiveTermFormProps> = ({ userName }) => {
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/active_term.php`, {
+            const response = await fetch(API_ENDPOINTS.ADMIN_ACTIVE_TERM, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -54,7 +54,8 @@ const ActiveTermForm: React.FC<ActiveTermFormProps> = ({ userName }) => {
                 setMessage({ type: 'error', text: data.message || 'Failed to save configuration settings.' });
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Server connection failure.' });
+            console.error("Error saving active term configuration:", error);
+            setMessage({ type: 'error', text: 'An error occurred while saving the configuration.' });
         } finally {
             setIsSaving(false);
         }

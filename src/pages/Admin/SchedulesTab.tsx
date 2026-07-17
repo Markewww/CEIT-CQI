@@ -4,7 +4,7 @@ import SchedulesTable from "./components/SchedulesTable";
 // IMPORT MODALS: Bring in both creation and modification modules cleanly
 import ScheduleCreateModal from "./components/ScheduleCreateModal";
 import ScheduleEditModal from "./components/ScheduleEditModal";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface ScheduleData {
     id: number;
@@ -38,7 +38,7 @@ const SchedulesTab: React.FC = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const response = await fetch(`${APIconfig}/admin/schedules.php`);
+            const response = await fetch(API_ENDPOINTS.ADMIN_SCHEDULES);
             
             if (!response.ok) {
                 throw new Error(`HTTP network error code: ${response.status}`);
@@ -50,8 +50,9 @@ const SchedulesTab: React.FC = () => {
             } else {
                 setError(result.message || "Failed to load database class schedules.");
             }
-        } catch (err: any) {
-            setError(err.message || "Unable to reach database connection endpoint.");
+        } catch (err) {
+            const errorInstance = err as Error;
+            setError(errorInstance.message || "Unable to reach database connection endpoint.");
         } finally {
             setIsLoading(false);
         }
@@ -59,6 +60,12 @@ const SchedulesTab: React.FC = () => {
 
     // Fetch relational database blocks upon component mount
     useEffect(() => {
+        const timerGuard = setTimeout(() => {
+            fetchSchedules();
+        }, 0);
+
+        return () => clearTimeout(timerGuard);
+        // fetchSchedules();  
         fetchSchedules();
     }, [fetchSchedules]);
 

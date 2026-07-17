@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface ScheduleData {
     id: number;
@@ -66,9 +66,9 @@ const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({ schedule, onClose
         const fetchAllLookups = async () => {
             try {
                 const [resCourses, resPrograms, resUsers] = await Promise.all([
-                    fetch(`${APIconfig}/admin/courses.php`).then(r => r.json()),
-                    fetch(`${APIconfig}/admin/programs.php`).then(r => r.json()),
-                    fetch(`${APIconfig}/admin/users.php`).then(r => r.json())
+                    fetch(`${API_ENDPOINTS.ADMIN_COURSES}`).then(r => r.json()),
+                    fetch(`${API_ENDPOINTS.ADMIN_PROGRAMS}`).then(r => r.json()),
+                    fetch(`${API_ENDPOINTS.ADMIN_USERS}`).then(r => r.json())
                 ]);
 
                 if (resCourses.status === "success") setCourses(resCourses.data);
@@ -86,21 +86,24 @@ const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({ schedule, onClose
     // 2. FORM INITIALIZATION: Sync fields with current schedule state properties [INDEX: 0.1.27]
     useEffect(() => {
         if (schedule) {
-            setFormData({
-                id: schedule.id,
-                schedule_id: schedule.schedule_id || "",
-                course_id: schedule.course_id.toString(),
-                program_id: schedule.program_id.toString(),
-                user_id: schedule.user_id.toString(),
-                academic_year: schedule.academic_year,
-                semester: schedule.semester,
-                year_level: schedule.year_level.toString(),
-                section: schedule.section,
-                is_active: schedule.is_active
-            });
+            const timerGuard = setTimeout(() => {
+                setFormData({
+                    id: schedule.id,
+                    schedule_id: schedule.schedule_id || "",
+                    course_id: schedule.course_id.toString(),
+                    program_id: schedule.program_id.toString(),
+                    user_id: schedule.user_id.toString(),
+                    academic_year: schedule.academic_year,
+                    semester: schedule.semester,
+                    year_level: schedule.year_level.toString(),
+                    section: schedule.section,
+                    is_active: schedule.is_active
+                });
             // Synchronize the text display field with the current instructor's name on mount
             setInstructorSearch(schedule.instructor_name || "");
             setMessage(null);
+        }, 0);
+            return () => clearTimeout(timerGuard);
         }
     }, [schedule]);
 
@@ -135,7 +138,7 @@ const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({ schedule, onClose
         setMessage(null);
 
         try {
-            const response = await fetch(`${APIconfig}/admin/update_schedule.php`, {
+            const response = await fetch(`${API_ENDPOINTS.ADMIN_UPDATE_SCHEDULE}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -163,6 +166,8 @@ const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({ schedule, onClose
                 setMessage({ type: 'error', text: result.message || "Failed to update schedule metrics." });
             }
         } catch (err) {
+            const errorInstance = err as Error;
+            console.error("Error updating schedule:", errorInstance);
             setMessage({ type: 'error', text: "Connection error to endpoint server configuration." });
         } finally {
             setIsSubmitting(false);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { APIconfig } from "@/config/apiConfig";
+import { API_ENDPOINTS } from "@/config/apiConfig";
 
 interface UserCreateModalProps {
     onClose: () => void;
@@ -60,15 +60,17 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ onClose, onUserCreate
     useEffect(() => {
         const deptId = getDepartmentIdByCode(formData.department);
         if (deptId === 0) {
-            setPrograms([]);
-            setFormData(prev => ({ ...prev, program_id: 0 }));
-            return;
+            const timer = setTimeout(() => {
+                setPrograms([]);
+                setFormData(prev => ({ ...prev, program_id: 0 }));
+            }, 0);
+            return () => clearTimeout(timer);
         }
 
         const fetchPrograms = async () => {
             try {
                 setIsLoadingPrograms(true);
-                const res = await fetch(`${APIconfig}/helpers/get_cascading_options.php?department_id=${deptId}`);
+                const res = await fetch(`${API_ENDPOINTS.CASCADING_OPTIONS}?department_id=${deptId}`);
                 const result = await res.json();
                 if (result.status === "success") {
                     setPrograms(result.programs || []);
@@ -120,7 +122,7 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ onClose, onUserCreate
 
         try {
             // FIXED: Rerouted destination target to call your central update pipeline register endpoint via relative proxies [INDEX: 1]
-            const response = await fetch(`${APIconfig}/register.php`, {
+            const response = await fetch(`${API_ENDPOINTS.REGISTER}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(submissionPayload)
@@ -136,6 +138,8 @@ const UserCreateModal: React.FC<UserCreateModalProps> = ({ onClose, onUserCreate
                 setMessage({ type: "error", text: data.message || "Registration failed." });
             }
         } catch (error) {
+            const errorInstance = error as Error;
+            console.error("Error during user registration:", errorInstance);
             setMessage({ type: "error", text: "Unable to reach database connection endpoint." });
         } finally {
             setIsSubmitting(false);
