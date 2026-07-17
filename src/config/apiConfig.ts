@@ -36,13 +36,15 @@ export const API_ENDPOINTS = {
     FACULTY_DELETE_STUDENT: `${APIconfig}/faculty/delete_student.php`,
     FACULTY_TEST_ANALYSIS: `${APIconfig}/faculty/test_analysis.php`,
 
-    // CHAIRPERSON ENDPOINTS
-    CHAIRPERSON_MONITOR: `${APIconfig}/chairperson/fetch_program_schedules.php`,
+    // PROGRAM HEAD ENDPOINTS
+    PROGRAM_HEAD_MONITOR: `${APIconfig}/program_head/fetch_program_schedules.php`,
+    PROGRAM_HEAD_SO: `${APIconfig}/program_head/student_outcomes.php`,
+    PROGRAM_HEAD_SO_PI: `${APIconfig}/program_head/so_pi_mapping.php`,
 
-    // DEPARTMENT CHAIR ENDPOINTS
-    DEPARTMENT_CHAIR_MONITOR: `${APIconfig}/department_chair/fetch_schedules.php`,
+    // DEPARTMENT CHAIRPERSON ENDPOINTS
+    DEPARTMENT_CHAIRPERSON_MONITOR: `${APIconfig}/department_chairperson/fetch_schedules.php`,
 
-    // DEAN ENDPOINTS
-    DEAN_MONITOR: `${APIconfig}/dean/fetch_college_schedules.php`,
+    // COLLEGE DEAN ENDPOINTS
+    COLLEGE_DEAN_MONITOR: `${APIconfig}/college_dean/fetch_college_schedules.php`,
     
 }

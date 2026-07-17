@@ -83,14 +83,15 @@ if ($method === 'POST') {
             $db->beginTransaction();
 
             // 1. Save or modify main item boundaries count
-            $u_conf = $db->prepare("INSERT INTO class_test_configs (schedule_id, period, total_items) 
-                                    VALUES (:schedule_id, :period, :total_items) 
-                                    ON DUPLICATE KEY UPDATE total_items = :total_items");
+            $u_conf = $db->prepare("INSERT INTO class_test_configs (schedule_id, period, total_items)  
+                                    VALUES (:schedule_id, :period, :total_items)
+                                    ON DUPLICATE KEY UPDATE total_items = :update_total_items");
             
             $u_conf->execute([
                 ':schedule_id'        => $schedule_id,
                 ':period'             => $period,
-                ':total_items'        => $total_items
+                ':total_items'        => $total_items,
+                ':update_total_items' => $total_items 
             ]);
 
             // 2. 📍 AUTOMATED SYNC: Pre-seed empty rows inside class_ilo_configs dynamically!

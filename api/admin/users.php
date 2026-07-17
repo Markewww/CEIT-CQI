@@ -28,7 +28,7 @@ switch($request_method) {
                         u.email, 
                         u.contact_number, 
                         u.department_id, 
-                        u.program_id, -- ◄ Added missing column assignment [INDEX: 1]
+                        u.program_id,
                         u.role, 
                         u.status, 
                         u.is_active,

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { API_ENDPOINTS } from "@/config/apiConfig";
-import { ShieldAlert, CheckCircle2, AlertCircle, Clock, ExternalLink, RefreshCw } from "lucide-react";
-import ClassWorkspace from "./ClassWorkspace"; // Reuses your robust workspace view natively! [INDEX: 0.1.69]
+import { ShieldAlert, RefreshCw, GraduationCap, Calendar } from "lucide-react";
+import ProgramHeadSchedulesTable from "./ProgramHeadSchedulesTable";
+import ProgramHeadOutcomesPanel from "./ProgramHeadOutcomesPanel"; // ◄ IMPORT YOUR NEW DATA MANAGEMENT SUBPANEL
+import ProgramHeadAuditWorkspace from "./ProgramHeadAuditWorkspace";
 
 interface MonitoredClass {
     id: number;
@@ -9,14 +11,32 @@ interface MonitoredClass {
     course_code: string;
     course_name: string;
     section: string;
+    year_level: number;
+    students_count: number;
     faculty_name: string;
     faculty_email: string;
     midterms_status: "Completed" | "In Progress" | "Pending";
     finals_status: "Completed" | "In Progress" | "Pending";
 }
 
+interface StudentOutcome {
+    id: number;
+    so_letter: string;
+    so_value: string;
+}
+
+interface MetaPayload {
+    academicYear: string;
+    semester: string;
+    programTitle: string;
+    programCode: string;
+}
+
 const ProgramHeadDashboard: React.FC = () => {
     const [classes, setClasses] = useState<MonitoredClass[]>([]);
+    const [outcomes, setOutcomes] = useState<StudentOutcome[]>([]);
+    const [meta, setMeta] = useState<MetaPayload>({ academicYear: "", semester: "", programTitle: "", programCode: "" });
+    const [activeTab, setActiveTab] = useState<"schedules" | "outcomes">("schedules");
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
 
@@ -27,13 +47,26 @@ const ProgramHeadDashboard: React.FC = () => {
             if (!activeUserStr) return;
             const user = JSON.parse(activeUserStr);
 
-            const res = await fetch(`${API_ENDPOINTS.CHAIRPERSON_MONITOR}?user_id=${user.id}`);
+            const res = await fetch(`${API_ENDPOINTS.PROGRAM_HEAD_MONITOR}?user_id=${user.id}`);
             const result = await res.json();
             if (result.status === "success") {
                 setClasses(result.data || []);
+                setMeta({
+                    academicYear: result.academic_year || "—",
+                    semester: result.semester || "—",
+                    programTitle: result.program_title || "Degree Program",
+                    programCode: result.program_code || "N/A"
+                });
+            }
+            
+            // Load Outcomes Data
+            const resSo = await fetch(`${API_ENDPOINTS.PROGRAM_HEAD_SO}?user_id=${user.id}`);
+            const resultSo = await resSo.json();
+            if (resultSo.status === "success") {
+                setOutcomes(resultSo.data || []);
             }
         } catch (err) {
-            console.error("Network synchronization dropout reading program monitors:", err);
+            console.error("Dashboard data collection dropout:", err);
         } finally {
             setIsLoading(false);
         }
@@ -47,109 +80,85 @@ const ProgramHeadDashboard: React.FC = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    const renderStatusBadge = (status: "Completed" | "In Progress" | "Pending") => {
-        if (status === "Completed") return (
-            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md text-[10px] font-bold border border-emerald-100 uppercase tracking-wider">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Done
-            </span>
-        );
-        if (status === "In Progress") return (
-            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded-md text-[10px] font-bold border border-amber-100 uppercase tracking-wider animate-pulse">
-                <Clock className="w-3 h-3 text-amber-600" /> Drafting
-            </span>
-        );
-        return (
-            <span className="inline-flex items-center gap-1 bg-slate-50 text-slate-400 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-100 uppercase tracking-wider">
-                <AlertCircle className="w-3 h-3 text-slate-300" /> Lacking
-            </span>
-        );
-    };
 
     if (selectedScheduleId !== null) {
         return (
-            <ClassWorkspace 
+            <ProgramHeadAuditWorkspace 
                 scheduleId={selectedScheduleId} 
                 onBack={() => {
                     setSelectedScheduleId(null);
-                    loadProgramRegistryData(); // Re-fetch on return
+                    loadProgramRegistryData();
                 }} 
-            />
+            /> 
         );
     }
 
     return (
         <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in text-slate-800">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-5 select-none">
+            {/* TOP METADATA BRAND BAR CHIPS */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-200/60 pb-5 select-none">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900 font-montserrat tracking-tight">CQI Program Tracking Matrix</h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Audit real-time continuous quality improvement submission metrics across assigned tracks.</p>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 bg-slate-900 text-white text-[10px] font-bold font-montserrat uppercase px-2 py-0.5 rounded">
+                            <GraduationCap className="w-3 h-3" /> {meta.programCode} Track
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[10px] font-bold font-montserrat uppercase px-2 py-0.5 rounded border border-primary/20">
+                            <Calendar className="w-3 h-3" /> A.Y. {meta.academicYear}
+                        </span>
+                        <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-[10px] font-bold font-montserrat uppercase px-2 py-0.5 rounded border border-slate-200">
+                            {meta.semester}
+                        </span>
+                    </div>
+                    <h2 className="text-xl font-black text-slate-900 font-montserrat tracking-tight">
+                        Program Monitoring Framework — <span className="text-primary">{meta.programTitle}</span>
+                    </h2>
                 </div>
                 <button
                     onClick={loadProgramRegistryData}
                     disabled={isLoading}
-                    className="flex items-center gap-1.5 self-start bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                    className="flex items-center gap-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 self-start lg:self-auto"
                 >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} /> Refresh Sheets
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} /> Refresh Metric Logs
+                </button>
+            </div>
+
+            {/* TAB LINKS BAR TOGGLES CHANGER PANEL */}
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-1 select-none text-xs font-bold uppercase tracking-wider font-montserrat">
+                <button 
+                    type="button"
+                    onClick={() => setActiveTab("schedules")}
+                    className={`px-4 py-2 border-b-2 transition-all cursor-pointer ${activeTab === "schedules" ? "border-primary text-primary font-black" : "border-transparent text-slate-400"}`}
+                >
+                    Faculty Class Loads Summary
+                </button>
+                <button 
+                    type="button"
+                    onClick={() => setActiveTab("outcomes")}
+                    className={`px-4 py-2 border-b-2 transition-all cursor-pointer ${activeTab === "outcomes" ? "border-primary text-primary font-black" : "border-transparent text-slate-400"}`}
+                >
+                    Student Outcomes (SO) Settings
                 </button>
             </div>
 
             {isLoading ? (
                 <div className="w-full py-20 flex flex-col items-center justify-center gap-2 select-none">
                     <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Syncing monitor database...</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Assembling layout logs...</span>
                 </div>
-            ) : classes.length === 0 ? (
-                <div className="w-full py-16 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center select-none bg-slate-50/50">
-                    <ShieldAlert className="w-10 h-10 text-slate-300 mb-2" />
-                    <h4 className="text-sm font-bold text-slate-700">No active class offerings compiled.</h4>
-                    <p className="text-xs text-slate-400 max-w-sm mt-1">Schedules matching your specialized degree track programs code list have not been registered yet.</p>
-                </div>
-            ) : (
-                <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse text-left">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-100 select-none">
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Class Info</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Assigned Faculty</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Midterm CQI</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Finals CQI</th>
-                                    <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-600">
-                                {classes.map((cls) => (
-                                    <tr key={cls.id} className="hover:bg-slate-50/30 transition-colors group">
-                                        <td className="p-4 max-w-60">
-                                            <div className="font-bold text-slate-900 group-hover:text-primary transition-colors font-montserrat truncate">
-                                                {cls.course_name}
-                                            </div>
-                                            <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
-                                                <span className="font-mono text-slate-600 font-bold bg-slate-100 px-1 py-0.5 rounded text-[10px]">{cls.course_code}</span>
-                                                <span>•</span>
-                                                <span>Sec {cls.section}</span>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="text-slate-800 font-bold text-xs">{cls.faculty_name}</div>
-                                            <div className="text-[11px] text-slate-400 font-medium font-mono">{cls.faculty_email || "no-email@cvsu.edu.ph"}</div>
-                                        </td>
-                                        <td className="p-4 text-center">{renderStatusBadge(cls.midterms_status)}</td>
-                                        <td className="p-4 text-center">{renderStatusBadge(cls.finals_status)}</td>
-                                        <td className="p-4 text-right">
-                                            <button
-                                                onClick={() => setSelectedScheduleId(cls.id.toString())}
-                                                className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-primary hover:text-white border border-slate-200 hover:border-primary text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm cursor-pointer"
-                                            >
-                                                Audit View <ExternalLink className="w-3 h-3" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            ) : activeTab === "schedules" ? (
+                classes.length === 0 ? (
+                    <div className="w-full py-16 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center select-none bg-slate-50/50">
+                        <ShieldAlert className="w-10 h-10 text-slate-300 mb-2" />
+                        <h4 className="text-sm font-bold text-slate-700">No active class loads captured.</h4>
                     </div>
-                </div>
+                ) : (
+                    <ProgramHeadSchedulesTable classes={classes} onAuditClick={(id) => setSelectedScheduleId(id)} />
+                )
+            ) : (
+                <ProgramHeadOutcomesPanel 
+                    outcomes={outcomes} 
+                    onRefreshNeeded={loadProgramRegistryData} 
+                />
             )}
         </div>
     );

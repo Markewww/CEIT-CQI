@@ -51,7 +51,11 @@ const TestAnalysisGrid: React.FC<TestAnalysisGridProps> = ({ scheduleId, period,
             const res = await fetch(`${API_ENDPOINTS.FACULTY_TEST_ANALYSIS}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ schedule_id: scheduleId, period, total_items: totalItems })
+                body: JSON.stringify({ 
+                    schedule_id: scheduleId.toString(), 
+                    period: period, 
+                    total_items: totalItems.toString() 
+                })
             });
             const out = await res.json();
             if (out.status === "success") {

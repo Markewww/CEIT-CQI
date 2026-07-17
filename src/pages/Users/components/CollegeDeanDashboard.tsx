@@ -30,7 +30,7 @@ const CollegeDeanDashboard: React.FC = () => {
             if (!activeUserStr) return;
             const user = JSON.parse(activeUserStr);
 
-            const res = await fetch(`${API_ENDPOINTS.DEAN_MONITOR}?user_id=${user.id}`);
+            const res = await fetch(`${API_ENDPOINTS.COLLEGE_DEAN_MONITOR}?user_id=${user.id}`);
             const result = await res.json();
             if (result.status === "success") {
                 setClasses(result.data || []);

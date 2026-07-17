@@ -6,8 +6,8 @@ import ClassWorkspace from "./components/ClassWorkspace";
 
 // IMPORT USER ROLE-BASED COMPONENTS HERE
 import ProgramHeadDashboard from "./components/ProgramHeadDashboard"; // For Chairpersons
-import DeanDashboard from "./components/CollegeDeanDashboard"; // For Deans
 import DepartmentChairperson from "./components/DepartmentChairperson";
+import CollegeDeanDashboard from "./components/CollegeDeanDashboard";
 
 
 const UsersDashboard: React.FC = () => {
@@ -161,8 +161,8 @@ const UsersDashboard: React.FC = () => {
                     {activeSubTab === "DepartmentChairpersonTools" && (
                         <DepartmentChairperson />
                     )}
-                    {activeSubTab === "DeanTools" && (
-                        <DeanDashboard />
+                    {activeSubTab === "CollegeDeanTools" && (
+                        <CollegeDeanDashboard />
                     )}
                 </div>
 
